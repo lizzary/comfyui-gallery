@@ -5,6 +5,10 @@ import { useToast } from './Toast';
 import ConfirmModal from './ConfirmModal';
 import Lightbox from './Lightbox';
 import IllustrationCard from './IllustrationCard';
+import ColorGroup from './ColorGroup';
+import GroupConfigModal from './GroupConfigModal';
+import useGroupConfig from '../hooks/useGroupConfig';
+import { matchesTagPair, matchesPromptPair, groupIllustrations, GROUP_BY_OPTIONS } from '../utils/grouping';
 
 const SORT_OPTIONS = [
   { value: '', label: 'Default Order' },
@@ -12,6 +16,8 @@ const SORT_OPTIONS = [
   { value: 'fileSize', label: 'File Size' },
   { value: 'dateCreated', label: 'Date Created' },
 ];
+
+// ── Main component ───────────────────────────────────────
 
 export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
   const [illustrations, setIllustrations] = useState([]);
@@ -26,8 +32,16 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
   const [batchDeleting, setBatchDeleting] = useState(false);
   const [sortBy, setSortBy] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [groupBy, setGroupBy] = useState('none');
+  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
+  const [showGroupConfig, setShowGroupConfig] = useState(false);
   const fileInputRef = useRef(null);
   const { addToast } = useToast();
+
+  const tagGroupConfig = useGroupConfig('tag');
+  const promptGroupConfig = useGroupConfig('prompt');
+
+  const activeConfig = groupBy === 'tag' ? tagGroupConfig : promptGroupConfig;
 
   const fetchIllustrations = useCallback(async () => {
     try {
@@ -69,6 +83,44 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
     });
     return sorted;
   }, [illustrations, sortBy, sortOrder]);
+
+  // ── Grouping ───────────────────────────────────────────
+
+  const groupedIllustrations = useMemo(() => {
+    if (groupBy === 'none' || activeConfig.pairs.length === 0) return null;
+    const matchFn = groupBy === 'tag' ? matchesTagPair : matchesPromptPair;
+    return groupIllustrations(
+      sortedIllustrations,
+      activeConfig.pairs,
+      activeConfig.otherColor,
+      matchFn
+    );
+  }, [groupBy, sortedIllustrations, activeConfig]);
+
+  // Flat list matching visual order (for index lookups in Shift+Click / Lightbox)
+  const displayedIllustrations = useMemo(() => {
+    if (groupedIllustrations) {
+      const flat = [];
+      for (const g of groupedIllustrations) {
+        if (!collapsedGroups.has(g.id)) {
+          flat.push(...g.items);
+        }
+      }
+      return flat;
+    }
+    return sortedIllustrations;
+  }, [groupedIllustrations, collapsedGroups, sortedIllustrations]);
+
+  const toggleGroupCollapse = useCallback((groupId) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  }, []);
+
+  // ── Handlers ───────────────────────────────────────────
 
   const handleUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -163,7 +215,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
   const handleCardClick = (ill) => {
     setSelectedIds(new Set());
     setLastClickedId(ill.id);
-    const idx = sortedIllustrations.findIndex((i) => i.id === ill.id);
+    const idx = displayedIllustrations.findIndex((i) => i.id === ill.id);
     if (idx !== -1) setLightboxIndex(idx);
   };
 
@@ -182,11 +234,11 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
       handleCardClick(ill);
       return;
     }
-    const lastIdx = sortedIllustrations.findIndex((i) => i.id === lastClickedId);
-    const currIdx = sortedIllustrations.findIndex((i) => i.id === ill.id);
+    const lastIdx = displayedIllustrations.findIndex((i) => i.id === lastClickedId);
+    const currIdx = displayedIllustrations.findIndex((i) => i.id === ill.id);
     if (lastIdx === -1 || currIdx === -1) return;
     const [start, end] = lastIdx < currIdx ? [lastIdx, currIdx] : [currIdx, lastIdx];
-    const rangeIds = sortedIllustrations.slice(start, end + 1).map((i) => i.id);
+    const rangeIds = displayedIllustrations.slice(start, end + 1).map((i) => i.id);
     setSelectedIds((prev) => new Set([...prev, ...rangeIds]));
     setLastClickedId(ill.id);
   };
@@ -212,6 +264,20 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
       addToast(err.message || 'Failed to set cover', 'error');
     }
   };
+
+  const cardProps = useCallback((ill) => ({
+    key: ill.id,
+    illustration: ill,
+    onClick: handleCardClick,
+    onCtrlClick: handleCtrlClick,
+    onShiftClick: handleShiftClick,
+    onSetCover: setCoverTarget,
+    onDelete: setDeleteTarget,
+    isSelected: selectedIds.has(ill.id),
+    showHoverActions: true,
+  }), [selectedIds, lastClickedId, displayedIllustrations]);
+
+  // ── Render ─────────────────────────────────────────────
 
   return (
     <>
@@ -266,6 +332,35 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
               </div>
             )}
 
+            {/* Group By controls */}
+            {illustrations.length > 1 && (
+              <div className="flex items-center gap-1">
+                <select
+                  value={groupBy}
+                  onChange={(e) => { setGroupBy(e.target.value); setCollapsedGroups(new Set()); }}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-purple-500/50 appearance-none cursor-pointer"
+                >
+                  {GROUP_BY_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value} className="bg-gray-900 text-gray-200">
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                {groupBy !== 'none' && (
+                  <button
+                    onClick={() => setShowGroupConfig(true)}
+                    className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-gray-200 transition-colors"
+                    title={`Configure ${groupBy === 'tag' ? 'Tag' : 'Prompt'} Groups`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
@@ -303,21 +398,28 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
               </svg>
               <p className="text-sm">No illustrations yet. Click Upload above.</p>
             </div>
+          ) : groupedIllustrations ? (
+            /* Grouped rendering */
+            <div>
+              {groupedIllustrations.map((group) => (
+                <ColorGroup
+                  key={group.id}
+                  group={group}
+                  collapsed={collapsedGroups.has(group.id)}
+                  onToggle={() => toggleGroupCollapse(group.id)}
+                >
+                  {group.items.map((ill) => (
+                    <IllustrationCard {...cardProps(ill)} />
+                  ))}
+                </ColorGroup>
+              ))}
+            </div>
           ) : (
+            /* Flat grid (no grouping) */
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               <AnimatePresence mode="popLayout">
                 {sortedIllustrations.map((ill) => (
-                  <IllustrationCard
-                    key={ill.id}
-                    illustration={ill}
-                    onClick={handleCardClick}
-                    onCtrlClick={handleCtrlClick}
-                    onShiftClick={handleShiftClick}
-                    onSetCover={setCoverTarget}
-                    onDelete={setDeleteTarget}
-                    isSelected={selectedIds.has(ill.id)}
-                    showHoverActions={true}
-                  />
+                  <IllustrationCard {...cardProps(ill)} />
                 ))}
               </AnimatePresence>
             </div>
@@ -375,6 +477,23 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
         )}
       </div>
 
+      {/* Group Config Modal */}
+      <AnimatePresence>
+        {showGroupConfig && (
+          <GroupConfigModal
+            type={groupBy}
+            pairs={activeConfig.pairs}
+            palette={activeConfig.palette}
+            otherColor={activeConfig.otherColor}
+            onSave={(pairs) => {
+              activeConfig.setPairs(pairs);
+              setShowGroupConfig(false);
+            }}
+            onClose={() => setShowGroupConfig(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Confirm: set as cover */}
       {coverTarget && (
         <ConfirmModal
@@ -401,7 +520,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
       {/* Lightbox */}
       {lightboxIndex !== null && (
         <Lightbox
-          illustrations={sortedIllustrations}
+          illustrations={displayedIllustrations}
           initialIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onDelete={handleLightboxDelete}
