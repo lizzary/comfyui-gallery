@@ -11,6 +11,7 @@ export default function TagPromptSuggest({
   placeholder = '',
   className = '',
   inputClassName = '',
+  onEnter,
 }) {
   const [suggestions, setSuggestions] = useState([]);
   const [allItems, setAllItems] = useState([]);
@@ -99,6 +100,9 @@ export default function TagPromptSuggest({
         if (activeIndex >= 0 && activeIndex < suggestions.length) {
           e.preventDefault();
           selectSuggestion(suggestions[activeIndex]);
+        } else if (onEnter && value.trim()) {
+          e.preventDefault();
+          onEnter(value.trim());
         }
         break;
       case 'Escape':

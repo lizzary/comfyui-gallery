@@ -119,7 +119,7 @@ export default function SearchOverlay({ query, onClose }) {
 
   const handleShiftClick = (ill) => {
     if (lastClickedId === null) {
-      handleCardClick(ill);
+      handleCtrlClick(ill);
       return;
     }
     const lastIdx = displayedItems.findIndex((i) => i.id === lastClickedId);
@@ -368,6 +368,12 @@ export default function SearchOverlay({ query, onClose }) {
           initialIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onDelete={handleLightboxDelete}
+          onUpdate={(updated) => {
+            setResults((prev) => prev ? {
+              ...prev,
+              items: prev.items.map((i) => (i.id === updated.id ? updated : i)),
+            } : prev);
+          }}
         />
       )}
 

@@ -231,7 +231,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
 
   const handleShiftClick = (ill) => {
     if (lastClickedId === null) {
-      handleCardClick(ill);
+      handleCtrlClick(ill);
       return;
     }
     const lastIdx = displayedIllustrations.findIndex((i) => i.id === lastClickedId);
@@ -525,6 +525,11 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
           onClose={() => setLightboxIndex(null)}
           onDelete={handleLightboxDelete}
           onSetCover={handleLightboxSetCover}
+          onUpdate={(updated) => {
+            setIllustrations((prev) =>
+              prev.map((i) => (i.id === updated.id ? updated : i))
+            );
+          }}
         />
       )}
     </>

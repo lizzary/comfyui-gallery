@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getIllustrationMetadata } from '../api';
+import { getIllustrationMetadata, updateIllustration } from '../api';
+import TagPromptSuggest from './TagPromptSuggest';
 
 const META_KEYS = [
   'Model',
@@ -20,7 +21,7 @@ const FILEINFO_KEYS = [
   { key: 'date', label: 'Date Created' },
 ];
 
-export default function Lightbox({ illustrations, initialIndex, onClose, onDelete, onSetCover }) {
+export default function Lightbox({ illustrations, initialIndex, onClose, onDelete, onSetCover, onUpdate }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showDetails, setShowDetails] = useState(false);
   const [metadata, setMetadata] = useState(null);
@@ -28,6 +29,10 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
   const [metaError, setMetaError] = useState('');
   const [imageError, setImageError] = useState(false);
   const [tagsExpanded, setTagsExpanded] = useState(false);
+  const [editingTags, setEditingTags] = useState(false);
+  const [draftTags, setDraftTags] = useState([]);
+  const [savingTags, setSavingTags] = useState(false);
+  const [newTagInput, setNewTagInput] = useState('');
 
   // Sync from initialIndex when reopened with different image
   useEffect(() => {
@@ -51,6 +56,9 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
     setMetaError('');
     setImageError(false);
     setTagsExpanded(false);
+    setEditingTags(false);
+    setDraftTags([]);
+    setNewTagInput('');
   }, [currentIndex]);
 
   // Fetch metadata when details panel opens
@@ -104,6 +112,47 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
   const allTags = currentIllustration.tags
     ? currentIllustration.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : [];
+
+  // ── Tag editing handlers ────────────────────────────────
+
+  const enterEditMode = () => {
+    setDraftTags([...allTags]);
+    setNewTagInput('');
+    setEditingTags(true);
+  };
+
+  const cancelEdit = () => {
+    setEditingTags(false);
+    setDraftTags([]);
+    setNewTagInput('');
+  };
+
+  const addDraftTag = (tag) => {
+    const trimmed = tag.trim();
+    if (trimmed && !draftTags.includes(trimmed)) {
+      setDraftTags((prev) => [...prev, trimmed]);
+    }
+    setNewTagInput('');
+  };
+
+  const removeDraftTag = (tag) => {
+    setDraftTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  const saveTags = async () => {
+    setSavingTags(true);
+    try {
+      const updated = await updateIllustration(currentIllustration.id, {
+        tags: draftTags.join(', '),
+      });
+      if (onUpdate) onUpdate(updated);
+      setEditingTags(false);
+    } catch {
+      // keep edit mode open on failure
+    } finally {
+      setSavingTags(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -255,10 +304,74 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                     <p className="text-sm text-gray-500">No metadata available</p>
                   )}
 
-                  {/* Tags (expandable) */}
-                  {allTags.length > 0 && (
-                    <div className="pt-3 border-t border-white/10">
+                  {/* Tags */}
+                  <div className="pt-3 border-t border-white/10">
+                    <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">Tags</span>
+                      {!editingTags && (
+                        <button
+                          onClick={enterEditMode}
+                          className="p-1 rounded hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors"
+                          title="Edit tags"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {editingTags ? (
+                      <div className="mt-2 space-y-2">
+                        <div className="flex flex-wrap gap-1">
+                          {draftTags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs bg-purple-600/30 text-purple-300 border border-purple-500/30"
+                            >
+                              {tag}
+                              <button
+                                onClick={() => removeDraftTag(tag)}
+                                className="text-purple-400 hover:text-purple-200 transition-colors"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                        <TagPromptSuggest
+                          type="tag"
+                          value={newTagInput}
+                          onChange={setNewTagInput}
+                          onEnter={() => addDraftTag(newTagInput)}
+                          placeholder="Add tag..."
+                          className="w-full"
+                          inputClassName="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-purple-500/50 transition-colors"
+                        />
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-[10px] text-gray-600">
+                            Press <kbd className="px-1 rounded bg-white/5">Enter</kbd> to add
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={cancelEdit}
+                              className="px-3 py-1 rounded-lg text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={saveTags}
+                              disabled={savingTags}
+                              className="px-3 py-1 rounded-lg text-xs font-medium bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white transition-colors"
+                            >
+                              {savingTags ? 'Saving...' : 'Save'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : allTags.length > 0 ? (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {(tagsExpanded ? allTags : allTags.slice(0, 3)).map((tag, i) => (
                           <span key={i} className="px-1.5 py-0.5 rounded text-xs bg-gray-800 text-gray-300">
@@ -288,8 +401,10 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                           </button>
                         )}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-xs text-gray-600 mt-1">No tags</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
