@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpDown, Layers, Settings, Upload, Download, Trash2, X } from 'lucide-react';
+import { ArrowUpDown, Layers, Settings, Upload, Download, Trash2, X, Monitor } from 'lucide-react';
+import useQuality, { QUALITY_OPTIONS } from '../hooks/useQuality';
 import { listIllustrations, uploadIllustrations, updateArtist, deleteIllustration } from '../api';
 import { useToast } from './Toast';
 import ConfirmModal from './ConfirmModal';
@@ -39,6 +40,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
   const [showGroupConfig, setShowGroupConfig] = useState(false);
   const fileInputRef = useRef(null);
   const { addToast } = useToast();
+  const [quality, setQuality] = useQuality();
 
   const tagGroupConfig = useGroupConfig('tag');
   const promptGroupConfig = useGroupConfig('prompt');
@@ -277,7 +279,8 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
     onDelete: setDeleteTarget,
     isSelected: selectedIds.has(ill.id),
     showHoverActions: true,
-  }), [selectedIds, lastClickedId, displayedIllustrations]);
+    quality,
+  }), [selectedIds, lastClickedId, displayedIllustrations, quality]);
 
   // ── Render ─────────────────────────────────────────────
 
@@ -345,6 +348,15 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
                 }
               />
             )}
+
+            {/* Quality selector */}
+            <DropdownSelect
+              icon={Monitor}
+              label="Quality"
+              options={QUALITY_OPTIONS}
+              value={quality}
+              onChange={setQuality}
+            />
 
             <button
               onClick={() => fileInputRef.current?.click()}

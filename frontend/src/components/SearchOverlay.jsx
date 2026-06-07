@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layers, Settings, Download, Trash2, X } from 'lucide-react';
+import { Layers, Settings, Download, Trash2, X, Monitor } from 'lucide-react';
+import useQuality, { QUALITY_OPTIONS } from '../hooks/useQuality';
 import { searchIllustrations, deleteIllustration } from '../api';
 import { useToast } from './Toast';
 import IllustrationCard from './IllustrationCard';
@@ -27,6 +28,7 @@ export default function SearchOverlay({ query, onClose }) {
   const [collapsedGroups, setCollapsedGroups] = useState(new Set());
   const [showGroupConfig, setShowGroupConfig] = useState(false);
   const { addToast } = useToast();
+  const [quality, setQuality] = useQuality();
 
   const tagGroupConfig = useGroupConfig('tag');
   const promptGroupConfig = useGroupConfig('prompt');
@@ -204,7 +206,8 @@ export default function SearchOverlay({ query, onClose }) {
     onDelete: setDeleteTarget,
     isSelected: selectedIds.has(ill.id),
     showHoverActions: true,
-  }), [selectedIds, lastClickedId, displayedItems]);
+    quality,
+  }), [selectedIds, lastClickedId, displayedItems, quality]);
 
   // ── Render ─────────────────────────────────────────────
 
@@ -226,9 +229,9 @@ export default function SearchOverlay({ query, onClose }) {
           </h2>
           {results && <span className="text-sm text-content-muted">{results.total} results</span>}
 
-          {/* Group By controls */}
-          {items.length > 1 && (
-            <div className="ml-auto">
+          {/* Group By & Quality controls */}
+          <div className="ml-auto flex items-center gap-3">
+            {items.length > 1 && (
               <DropdownSelect
                 icon={Layers}
                 label="Group"
@@ -247,8 +250,15 @@ export default function SearchOverlay({ query, onClose }) {
                   ) : null
                 }
               />
-            </div>
-          )}
+            )}
+            <DropdownSelect
+              icon={Monitor}
+              label="Quality"
+              options={QUALITY_OPTIONS}
+              value={quality}
+              onChange={setQuality}
+            />
+          </div>
         </div>
 
         {/* Content */}

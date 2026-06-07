@@ -11,6 +11,7 @@ export default function IllustrationCard({
   onDelete,
   isSelected = false,
   showHoverActions = true,
+  quality = 'low',
 }) {
   const [imgError, setImgError] = useState(false);
 
@@ -55,7 +56,7 @@ export default function IllustrationCard({
           <span className="text-content-muted text-xs">Load failed</span>
         ) : (
           <img
-            src={`http://localhost:8000${illustration.thumbnail_url}`}
+            src={`http://localhost:8000${illustration.thumbnail_url}?quality=${quality}`}
             alt={illustration.original_filename}
             onError={() => setImgError(true)}
             className={`w-full h-full object-cover transition-transform duration-200 ${

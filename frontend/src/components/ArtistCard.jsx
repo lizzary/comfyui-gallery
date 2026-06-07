@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
 
-export default function ArtistCard({ artist, onClick, onDelete }) {
+export default function ArtistCard({ artist, onClick, onDelete, quality = 'low' }) {
   return (
     <motion.div
       layout
@@ -16,7 +16,7 @@ export default function ArtistCard({ artist, onClick, onDelete }) {
       <div className="aspect-[4/5] bg-surface-tertiary flex items-center justify-center overflow-hidden">
         {artist.cover_thumbnail_url ? (
           <img
-            src={`http://localhost:8000${artist.cover_thumbnail_url}`}
+            src={`http://localhost:8000${artist.cover_thumbnail_url}?quality=${quality}`}
             alt={artist.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />

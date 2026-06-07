@@ -40,10 +40,17 @@ app.add_middleware(
 
 # ── helpers ─────────────────────────────────────────────
 
+THUMBNAIL_QUALITY_CONFIG = {
+    "low": {"max_size": 400, "jpeg_quality": 75, "dir": "thumbnails"},
+    "normal": {"max_size": 1200, "jpeg_quality": 85, "dir": "thumbnails_normal"},
+}
+
+
 def _artist_upload_dir(artist_id: int) -> str:
     p = os.path.join(UPLOADS_DIR, str(artist_id))
     os.makedirs(os.path.join(p, "originals"), exist_ok=True)
     os.makedirs(os.path.join(p, "thumbnails"), exist_ok=True)
+    os.makedirs(os.path.join(p, "thumbnails_normal"), exist_ok=True)
     return p
 
 
@@ -252,7 +259,6 @@ def upload_illustrations(
         try:
             tags = extract_tags(image)
             width, height, mime_type = get_image_info(image)
-            thumb = create_thumbnail(image)
 
             conn = get_db()
             cur = conn.execute(
@@ -275,12 +281,17 @@ def upload_illustrations(
             ill_id = cur.lastrowid
             disk_filename = f"{ill_id}_{safe_filename}"
 
-            # Write files to disk first (needed for metadata extraction)
+            # Write files to disk (needed for metadata extraction)
             originals_dir = os.path.join(UPLOADS_DIR, str(artist_id), "originals")
-            thumbnails_dir = os.path.join(UPLOADS_DIR, str(artist_id), "thumbnails")
+
+            # Generate thumbnails at both quality levels
+            for quality, cfg in THUMBNAIL_QUALITY_CONFIG.items():
+                thumb = create_thumbnail(image, max_size=cfg["max_size"])
+                thumb_dir = os.path.join(UPLOADS_DIR, str(artist_id), cfg["dir"])
+                thumb.save(os.path.join(thumb_dir, disk_filename), format="JPEG",
+                           quality=cfg["jpeg_quality"])
 
             image.save(os.path.join(originals_dir, disk_filename))
-            thumb.save(os.path.join(thumbnails_dir, disk_filename), format="JPEG")
 
             # Extract ComfyUI metadata from saved file
             saved_path = os.path.join(originals_dir, disk_filename)
@@ -349,19 +360,47 @@ def serve_illustration_file(illustration_id: int, download: bool = Query(False))
 
 
 @app.get("/api/illustrations/{illustration_id}/thumbnail")
-def serve_illustration_thumbnail(illustration_id: int):
+def serve_illustration_thumbnail(illustration_id: int, quality: str = "low"):
+    if quality not in ("low", "normal", "original"):
+        raise HTTPException(400, "quality must be one of: low, normal, original")
+
     conn = get_db()
     row = conn.execute(
-        "SELECT filename, artist_id FROM illustrations WHERE id = ?",
+        "SELECT filename, artist_id, mime_type FROM illustrations WHERE id = ?",
         (illustration_id,),
     ).fetchone()
     conn.close()
     if row is None:
         raise HTTPException(404, "Illustration not found")
 
-    filepath = os.path.join(UPLOADS_DIR, str(row["artist_id"]), "thumbnails", row["filename"])
+    artist_dir = os.path.join(UPLOADS_DIR, str(row["artist_id"]))
+    filename = row["filename"]
+
+    # Original quality — serve the original file directly
+    if quality == "original":
+        filepath = os.path.join(artist_dir, "originals", filename)
+        if not os.path.isfile(filepath):
+            raise HTTPException(404, "Original file not found on disk")
+        return FileResponse(filepath, media_type=row["mime_type"])
+
+    cfg = THUMBNAIL_QUALITY_CONFIG[quality]
+    thumb_dir = os.path.join(artist_dir, cfg["dir"])
+    filepath = os.path.join(thumb_dir, filename)
+
+    # Generate on-the-fly for pre-existing illustrations without this quality level
     if not os.path.isfile(filepath):
-        raise HTTPException(404, "Thumbnail not found on disk")
+        original_path = os.path.join(artist_dir, "originals", filename)
+        if not os.path.isfile(original_path):
+            raise HTTPException(404, "Original file not found — cannot generate thumbnail")
+        try:
+            from PIL import Image
+            img = Image.open(original_path)
+            img.load()
+            thumb = create_thumbnail(img, max_size=cfg["max_size"])
+            thumb.save(filepath, format="JPEG", quality=cfg["jpeg_quality"])
+        except Exception:
+            raise HTTPException(500, "Failed to generate thumbnail on-the-fly")
+
     return FileResponse(filepath, media_type="image/jpeg")
 
 
@@ -384,7 +423,7 @@ def delete_illustration(illustration_id: int):
 
     # Delete files
     artist_dir = os.path.join(UPLOADS_DIR, str(row["artist_id"]))
-    for sub in ("originals", "thumbnails"):
+    for sub in ("originals", "thumbnails", "thumbnails_normal"):
         fp = os.path.join(artist_dir, sub, row["filename"])
         if os.path.isfile(fp):
             os.remove(fp)

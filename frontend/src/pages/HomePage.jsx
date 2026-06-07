@@ -8,6 +8,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import ArtistOverlay from '../components/ArtistOverlay';
 import SearchOverlay from '../components/SearchOverlay';
 import { listArtists, createArtist, deleteArtist } from '../api';
+import useQuality from '../hooks/useQuality';
 
 export default function HomePage() {
   const [artists, setArtists] = useState([]);
@@ -17,6 +18,7 @@ export default function HomePage() {
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [searchQuery, setSearchQuery] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { artist }
+  const [quality] = useQuality();
 
   const fetchArtists = useCallback(async () => {
     try {
@@ -101,6 +103,7 @@ export default function HomePage() {
                   artist={artist}
                   onClick={setSelectedArtist}
                   onDelete={setDeleteConfirm}
+                  quality={quality}
                 />
               ))}
             </AnimatePresence>
