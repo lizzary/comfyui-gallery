@@ -6,7 +6,7 @@ import { useToast } from '../components/Toast';
 import NamingFormatInput from '../components/NamingFormatInput';
 import useDownloadConfig from '../hooks/useDownloadConfig';
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000';
 const LANG_OPTIONS = [
   { value: 'en', labelKey: 'settings.general.language.en' },
   { value: 'zh', labelKey: 'settings.general.language.zh' },
@@ -18,6 +18,14 @@ export default function SettingsPage() {
   const { format, setFormat } = useDownloadConfig();
   const [settings, setSettings] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [formatSaved, setFormatSaved] = useState(false);
+
+  const handleFormatBlur = () => {
+    if (formatSaved) return;
+    addToast(t('settings.toast.saved'), 'success');
+    setFormatSaved(true);
+    setTimeout(() => setFormatSaved(false), 3000);
+  };
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/settings`)
@@ -160,6 +168,7 @@ export default function SettingsPage() {
               <NamingFormatInput
                 value={format}
                 onChange={setFormat}
+                onBlur={handleFormatBlur}
                 placeholder={t('settings.download.namingFormatPlaceholder')}
               />
             </div>

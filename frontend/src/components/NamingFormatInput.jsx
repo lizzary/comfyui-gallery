@@ -35,7 +35,7 @@ function removeTagAt(value, tagIndex) {
   return value;
 }
 
-export default function NamingFormatInput({ value, onChange, placeholder }) {
+export default function NamingFormatInput({ value, onChange, onBlur, placeholder }) {
   const [focused, setFocused] = useState(false);
   const [textInput, setTextInput] = useState('');
   const [showTags, setShowTags] = useState(false);
@@ -89,11 +89,23 @@ export default function NamingFormatInput({ value, onChange, placeholder }) {
   }, []);
 
   const handleBlur = useCallback(() => {
+    // Commit any pending text before blurring
+    const clean = textInput.replace(FORBIDDEN_INPUT_RE, '');
     blurTimeoutRef.current = setTimeout(() => {
       setFocused(false);
       setShowTags(false);
+      if (onBlur) {
+        if (clean) {
+          onChange(value + clean);
+          setTextInput('');
+        }
+        onBlur();
+      } else if (clean) {
+        onChange(value + clean);
+        setTextInput('');
+      }
     }, 200);
-  }, []);
+  }, [textInput, value, onChange, onBlur]);
 
   const handleFocus = useCallback(() => {
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
