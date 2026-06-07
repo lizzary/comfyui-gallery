@@ -14,7 +14,7 @@ from database import get_db, init_db
 from models import (
     ArtistCreate, ArtistUpdate, ArtistResponse,
     IllustrationResponse, IllustrationUpdate,
-    SearchResult,
+    SearchResult, IllustrationListResult,
 )
 from utils import extract_metadata, extract_tags, create_thumbnail, get_image_info, set_use_gpu
 
@@ -223,17 +223,22 @@ def delete_artist(artist_id: int):
 
 # ── Illustration routes ─────────────────────────────────
 
-@app.get("/api/artists/{artist_id}/illustrations", response_model=list[IllustrationResponse])
+@app.get("/api/artists/{artist_id}/illustrations", response_model=IllustrationListResult)
 def list_illustrations(
     artist_id: int,
     offset: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(50, ge=1, le=100000),
 ):
     conn = get_db()
     artist = conn.execute("SELECT id, name FROM artists WHERE id = ?", (artist_id,)).fetchone()
     if artist is None:
         conn.close()
         raise HTTPException(404, "Artist not found")
+
+    total = conn.execute(
+        "SELECT COUNT(*) AS cnt FROM illustrations WHERE artist_id = ?",
+        (artist_id,),
+    ).fetchone()["cnt"]
 
     rows = conn.execute("""
         SELECT i.*, ? AS artist_name
@@ -243,7 +248,13 @@ def list_illustrations(
         LIMIT ? OFFSET ?
     """, (artist["name"], artist_id, limit, offset)).fetchall()
     conn.close()
-    return [_row_to_illustration(r) for r in rows]
+
+    return {
+        "items": [_row_to_illustration(r) for r in rows],
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+    }
 
 
 @app.post("/api/artists/{artist_id}/illustrations/upload", response_model=list[IllustrationResponse], status_code=201)

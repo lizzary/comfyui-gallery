@@ -86,6 +86,13 @@ const translations = {
     'artistOverlay.toast.batchDeleted': '{n} illustration(s) deleted',
     'artistOverlay.toast.batchPartial': '{succeeded} deleted, {failed} failed',
     'artistOverlay.upload.failed': 'Upload failed',
+    'artistOverlay.pagination.page': 'Page',
+    'artistOverlay.pagination.of': 'of',
+    'artistOverlay.pagination.total': '{total} total',
+    'artistOverlay.pagination.prev': 'Previous',
+    'artistOverlay.pagination.next': 'Next',
+    'artistOverlay.pagination.pageSize': 'Per page',
+    'artistOverlay.pagination.all': 'All',
     'artistOverlay.toast.downloading': 'Downloading {n} file(s)...',
 
     // IllustrationCard
@@ -312,6 +319,13 @@ const translations = {
     'artistOverlay.toast.batchDeleted': '已删除 {n} 张作品',
     'artistOverlay.toast.batchPartial': '{succeeded} 张删除成功，{failed} 张失败',
     'artistOverlay.upload.failed': '上传失败',
+    'artistOverlay.pagination.page': '第',
+    'artistOverlay.pagination.of': '/',
+    'artistOverlay.pagination.total': '共 {total} 张',
+    'artistOverlay.pagination.prev': '上一页',
+    'artistOverlay.pagination.next': '下一页',
+    'artistOverlay.pagination.pageSize': '每页',
+    'artistOverlay.pagination.all': '全部',
     'artistOverlay.toast.downloading': '正在下载 {n} 个文件...',
 
     // IllustrationCard

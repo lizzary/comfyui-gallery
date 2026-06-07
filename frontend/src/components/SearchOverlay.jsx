@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layers, Settings, Download, Trash2, X, Monitor } from 'lucide-react';
-import useQuality, { QUALITY_OPTIONS } from '../hooks/useQuality';
+import useQuality from '../hooks/useQuality';
 import { searchIllustrations, deleteIllustration } from '../api';
 import { useToast } from './Toast';
 import IllustrationCard from './IllustrationCard';
@@ -12,7 +12,7 @@ import DropdownSelect from './DropdownSelect';
 import TagPromptSuggest from './TagPromptSuggest';
 import GroupConfigModal from './GroupConfigModal';
 import useGroupConfig from '../hooks/useGroupConfig';
-import { matchesTagPair, matchesPromptPair, groupIllustrations, GROUP_BY_OPTIONS } from '../utils/grouping';
+import { matchesTagPair, matchesPromptPair, groupIllustrations } from '../utils/grouping';
 import { useLocale } from '../contexts/LocaleContext';
 
 // ── Main component ───────────────────────────────────────

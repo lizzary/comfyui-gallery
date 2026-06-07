@@ -66,3 +66,10 @@ class SearchResult(BaseModel):
     total: int
     offset: int
     limit: int
+
+
+class IllustrationListResult(BaseModel):
+    items: list[IllustrationResponse]
+    total: int
+    offset: int
+    limit: int

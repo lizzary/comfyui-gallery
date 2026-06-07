@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpDown, Layers, Settings, Upload, Download, Trash2, X, Monitor, Loader2 } from 'lucide-react';
-import useQuality, { QUALITY_OPTIONS } from '../hooks/useQuality';
+import { ArrowUpDown, Layers, Settings, Upload, Download, Trash2, X, Monitor, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import useQuality from '../hooks/useQuality';
 import { listIllustrations, uploadSingleIllustration, updateArtist, deleteIllustration } from '../api';
 import { useToast } from './Toast';
 import ConfirmModal from './ConfirmModal';
@@ -12,7 +12,7 @@ import DropdownSelect from './DropdownSelect';
 import TagPromptSuggest from './TagPromptSuggest';
 import GroupConfigModal from './GroupConfigModal';
 import useGroupConfig from '../hooks/useGroupConfig';
-import { matchesTagPair, matchesPromptPair, groupIllustrations, GROUP_BY_OPTIONS } from '../utils/grouping';
+import { matchesTagPair, matchesPromptPair, groupIllustrations } from '../utils/grouping';
 import { useLocale } from '../contexts/LocaleContext';
 
 // ── Main component ───────────────────────────────────────
@@ -41,6 +41,21 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
   const [quality, setQuality] = useQuality();
   const { t } = useLocale();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const PAGE_SIZE_OPTIONS = useMemo(() => [
+    { value: 50, label: '50' },
+    { value: 100, label: '100' },
+    { value: 200, label: '200' },
+    { value: 500, label: '500' },
+    { value: 1000, label: '1000' },
+    { value: 'all', label: t('artistOverlay.pagination.all') },
+  ], [t]);
+
+  const totalPages = pageSize === 'all' ? 1 : Math.max(1, Math.ceil(totalCount / pageSize));
+
   const SORT_OPTIONS = useMemo(() => [
     { value: '', label: t('artistOverlay.sort.default') },
     { value: 'resolution', label: t('artistOverlay.sort.resolution') },
@@ -65,10 +80,17 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
 
   const activeConfig = groupBy === 'tag' ? tagGroupConfig : promptGroupConfig;
 
-  const fetchIllustrations = useCallback(async () => {
+  const fetchPage = useCallback(async (page, size) => {
+    const limit = size === 'all' ? 100000 : size;
+    const offset = size === 'all' ? 0 : (page - 1) * size;
     try {
-      const data = await listIllustrations(artist.id);
-      setIllustrations(data);
+      const data = await listIllustrations(artist.id, offset, limit);
+      setIllustrations(data.items);
+      setTotalCount(data.total);
+      // If current page is empty and not page 1, go back one page
+      if (data.items.length === 0 && page > 1 && size !== 'all') {
+        setCurrentPage(page - 1);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -77,8 +99,16 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
   }, [artist.id]);
 
   useEffect(() => {
-    fetchIllustrations();
-  }, [fetchIllustrations]);
+    setLoading(true);
+    setSelectedIds(new Set());
+    setLastClickedId(null);
+    fetchPage(currentPage, pageSize);
+  }, [currentPage, pageSize, fetchPage]);
+
+  const handlePageSizeChange = (size) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
   const sortedIllustrations = useMemo(() => {
     if (!sortBy) return illustrations;
@@ -188,7 +218,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (succeeded > 0) {
-      await fetchIllustrations();
+      await fetchPage(currentPage, pageSize);
       if (onArtistUpdated) onArtistUpdated();
     }
   };
@@ -213,7 +243,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
       setDeleteTarget(null);
       setSelectedIds((prev) => { const next = new Set(prev); next.delete(deleteTarget.id); return next; });
       addToast(t('artistOverlay.toast.deleted'), 'success');
-      await fetchIllustrations();
+      await fetchPage(currentPage, pageSize);
       if (onArtistUpdated) onArtistUpdated();
     } catch (err) {
       addToast(err.message || t('artistOverlay.toast.deleteFailed'), 'error');
@@ -239,7 +269,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
     } else {
       addToast(t('artistOverlay.toast.batchPartial', { succeeded: ids.length - failed, failed }), 'error');
     }
-    await fetchIllustrations();
+    await fetchPage(currentPage, pageSize);
     if (onArtistUpdated) onArtistUpdated();
   };
 
@@ -300,7 +330,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
       await deleteIllustration(ill.id);
       setSelectedIds((prev) => { const next = new Set(prev); next.delete(ill.id); return next; });
       addToast(t('artistOverlay.toast.deleted'), 'success');
-      await fetchIllustrations();
+      await fetchPage(currentPage, pageSize);
       if (onArtistUpdated) onArtistUpdated();
     } catch (err) {
       addToast(err.message || t('artistOverlay.toast.deleteFailed'), 'error');
@@ -350,7 +380,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             <span className="text-sm text-content-muted">
               {filterQuery.trim()
                 ? t('artistOverlay.filteredCount', { filteredCount: filteredIllustrations.length, total: illustrations.length })
-                : t('artistOverlay.totalCount', { total: illustrations.length })}
+                : t('artistOverlay.totalCount', { total: totalCount })}
             </span>
             {filterQuery.trim() && filterScope !== 'all' && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-medium uppercase">
@@ -478,6 +508,53 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             </div>
           )}
 
+          {/* Pagination — top */}
+          {!loading && totalCount > 0 && (
+            <div className="flex items-center justify-between mb-4 px-1">
+              <div className="flex items-center gap-2 text-sm text-content-secondary">
+                <span>{t('artistOverlay.pagination.page')}</span>
+                <span className="font-medium text-content-primary">{currentPage}</span>
+                <span>{t('artistOverlay.pagination.of')}</span>
+                <span className="font-medium text-content-primary">{totalPages}</span>
+                <span className="text-content-muted ml-1">({t('artistOverlay.pagination.total', { total: totalCount })})</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    className="p-1.5 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="p-1.5 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                <span className="text-xs text-content-muted mx-1">{t('artistOverlay.pagination.pageSize')}</span>
+                <div className="flex items-center gap-0.5">
+                  {PAGE_SIZE_OPTIONS.map(opt => (
+                    <button
+                      key={String(opt.value)}
+                      onClick={() => handlePageSizeChange(opt.value)}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                        pageSize === opt.value
+                          ? 'bg-accent text-white'
+                          : 'text-content-tertiary hover:text-content-primary hover:bg-surface-tertiary'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex items-center justify-center h-64 text-content-muted text-sm">{t('artistOverlay.loading')}</div>
           ) : illustrations.length === 0 ? (
@@ -515,6 +592,31 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             </div>
           )}
         </div>
+
+        {/* Pagination — bottom */}
+        {!loading && totalCount > 0 && (
+          <div className="flex items-center justify-center gap-3 mt-6 mb-2">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              className="px-3 py-1.5 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm flex items-center gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              {t('artistOverlay.pagination.prev')}
+            </button>
+            <span className="text-sm text-content-secondary">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              className="px-3 py-1.5 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm flex items-center gap-1"
+            >
+              {t('artistOverlay.pagination.next')}
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Key hints */}
         {selectedIds.size === 0 && illustrations.length > 0 && (
