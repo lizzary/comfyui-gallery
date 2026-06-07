@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpDown, Layers, Settings, Upload, Download, Trash2, X, Monitor, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import useQuality from '../hooks/useQuality';
+import useDownloadConfig, { resolveFilename, sanitizeFilename } from '../hooks/useDownloadConfig';
 import { listIllustrations, uploadSingleIllustration, updateArtist, deleteIllustration } from '../api';
 import { useToast } from './Toast';
 import ConfirmModal from './ConfirmModal';
@@ -39,6 +40,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
   const fileInputRef = useRef(null);
   const { addToast } = useToast();
   const [quality, setQuality] = useQuality();
+  const { format } = useDownloadConfig();
   const { t } = useLocale();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -275,15 +277,21 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
 
   const handleBatchDownload = async () => {
     const selected = illustrations.filter((i) => selectedIds.has(i.id));
+    if (selected.length === 0) return;
     addToast(t('artistOverlay.toast.downloading', { n: selected.length }), 'success');
     for (const ill of selected) {
       try {
-        const res = await fetch(`http://localhost:8000${ill.file_url}`);
+        const res = await fetch(ill.file_url);
+        if (!res.ok) continue;
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = ill.original_filename;
+        try {
+          a.download = resolveFilename(format, ill);
+        } catch {
+          a.download = ill.original_filename;
+        }
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

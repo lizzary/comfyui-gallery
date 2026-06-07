@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Monitor, Cpu, Globe } from 'lucide-react';
+import { ArrowLeft, Monitor, Cpu, Globe, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLocale } from '../contexts/LocaleContext';
 import { useToast } from '../components/Toast';
+import NamingFormatInput from '../components/NamingFormatInput';
+import useDownloadConfig from '../hooks/useDownloadConfig';
 
 const BASE_URL = 'http://localhost:8000';
 const LANG_OPTIONS = [
@@ -13,6 +15,7 @@ const LANG_OPTIONS = [
 export default function SettingsPage() {
   const { locale, setLocale, t } = useLocale();
   const { addToast } = useToast();
+  const { format, setFormat } = useDownloadConfig();
   const [settings, setSettings] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -135,6 +138,30 @@ export default function SettingsPage() {
                   }`}
                 />
               </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Download Settings */}
+        <section>
+          <h2 className="text-sm font-semibold text-content-secondary uppercase tracking-wide mb-1 flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            {t('settings.download.heading')}
+          </h2>
+          <p className="text-xs text-content-muted mb-4 ml-6">
+            {t('settings.download.description')}
+          </p>
+          <div className="bg-surface-secondary rounded-2xl border border-edge-secondary divide-y divide-edge-subtle">
+            <div className="px-5 py-4">
+              <div>
+                <span className="text-sm font-medium text-content-primary">{t('settings.download.namingFormat')}</span>
+                <p className="text-xs text-content-muted mt-0.5 mb-3">{t('settings.download.namingFormatDesc')}</p>
+              </div>
+              <NamingFormatInput
+                value={format}
+                onChange={setFormat}
+                placeholder={t('settings.download.namingFormatPlaceholder')}
+              />
             </div>
           </div>
         </section>

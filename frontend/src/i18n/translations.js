@@ -230,6 +230,11 @@ const translations = {
     'settings.indexing.gpuDesc': 'Only effective when a compatible NVIDIA GPU with CUDA support is available. If enabled without a suitable GPU, the tagger will fall back to CPU automatically.',
     'settings.toast.saved': 'Settings saved successfully',
     'settings.toast.saveFailed': 'Failed to save settings',
+    'settings.download.heading': 'Download Settings',
+    'settings.download.description': 'Customize how downloaded illustration files are named.',
+    'settings.download.namingFormat': 'File naming format',
+    'settings.download.namingFormatDesc': 'Combine free text with tags to build the filename. Click tags in the dropdown to insert them. Tags are replaced with actual values when downloading.',
+    'settings.download.namingFormatPlaceholder': 'Enter naming format...',
   },
 
   zh: {
@@ -463,6 +468,11 @@ const translations = {
     'settings.indexing.gpuDesc': '仅当具备合适的 NVIDIA GPU 并安装了 CUDA 时此选项才会生效。如果在没有合适 GPU 的情况下启用，标记器将自动回退到 CPU。',
     'settings.toast.saved': '设置保存成功',
     'settings.toast.saveFailed': '设置保存失败',
+    'settings.download.heading': '下载设置',
+    'settings.download.description': '自定义下载作品时的文件命名规则。',
+    'settings.download.namingFormat': '文件命名格式',
+    'settings.download.namingFormatDesc': '使用自由文本和标签组合生成文件名。点击下拉菜单中的标签将其插入。下载时标签会被替换为实际值。',
+    'settings.download.namingFormatPlaceholder': '输入命名格式...',
   },
 };
 

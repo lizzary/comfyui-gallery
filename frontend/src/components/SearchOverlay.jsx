@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layers, Settings, Download, Trash2, X, Monitor } from 'lucide-react';
 import useQuality from '../hooks/useQuality';
+import useDownloadConfig, { resolveFilename } from '../hooks/useDownloadConfig';
 import { searchIllustrations, deleteIllustration } from '../api';
 import { useToast } from './Toast';
 import IllustrationCard from './IllustrationCard';
@@ -33,6 +34,7 @@ export default function SearchOverlay({ query, onClose }) {
   const [filterScope, setFilterScope] = useState('all');
   const { addToast } = useToast();
   const [quality, setQuality] = useQuality();
+  const { format } = useDownloadConfig();
   const { t } = useLocale();
 
   const translatedGroupOptions = useMemo(() => [
@@ -201,15 +203,21 @@ export default function SearchOverlay({ query, onClose }) {
 
   const handleBatchDownload = async () => {
     const selected = items.filter((i) => selectedIds.has(i.id));
+    if (selected.length === 0) return;
     addToast(t('searchOverlay.toast.downloading', { n: selected.length }), 'success');
     for (const ill of selected) {
       try {
-        const res = await fetch(`http://localhost:8000${ill.file_url}`);
+        const res = await fetch(ill.file_url);
+        if (!res.ok) continue;
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = ill.original_filename;
+        try {
+          a.download = resolveFilename(format, ill);
+        } catch {
+          a.download = ill.original_filename;
+        }
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
