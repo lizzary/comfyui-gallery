@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { Plus } from 'lucide-react';
 import Layout from '../components/Layout';
 import ArtistCard from '../components/ArtistCard';
 import CreateArtistModal from '../components/CreateArtistModal';
@@ -73,9 +74,10 @@ export default function HomePage() {
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-sm font-medium text-white shadow-lg shadow-accent/20 transition-all"
+            className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-sm font-medium text-white shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all hover:scale-[1.03] inline-flex items-center gap-2"
           >
-            + New Artist
+            <Plus className="w-4 h-4" />
+            New Artist
           </button>
         </div>
 

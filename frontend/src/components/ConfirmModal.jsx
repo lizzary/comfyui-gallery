@@ -35,16 +35,16 @@ export default function ConfirmModal({
           <div className="flex justify-end gap-3">
             <button
               onClick={onCancel}
-              className="px-4 py-2 rounded-lg text-sm bg-surface-tertiary hover:bg-edge-secondary text-content-secondary transition-colors"
+              className="px-5 py-2.5 rounded-xl text-sm font-medium bg-surface-tertiary hover:bg-edge-secondary text-content-secondary transition-all"
             >
               {cancelText}
             </button>
             <button
               onClick={onConfirm}
-              className={`px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors ${
+              className={`px-5 py-2.5 rounded-xl text-sm font-medium text-white shadow-lg transition-all hover:scale-[1.03] ${
                 danger
-                  ? 'bg-danger hover:bg-danger-hover'
-                  : 'bg-accent hover:bg-accent-hover'
+                  ? 'bg-danger hover:bg-danger-hover shadow-danger/20 hover:shadow-danger/30'
+                  : 'bg-accent hover:bg-accent-hover shadow-accent/20 hover:shadow-accent/30'
               }`}
             >
               {confirmText}

@@ -54,14 +54,14 @@ export default function CreateArtistModal({ onClose, onSubmit }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm text-content-tertiary hover:text-content-secondary hover:bg-surface-tertiary transition-colors"
+              className="px-4 py-2.5 rounded-xl text-sm font-medium text-content-tertiary hover:text-content-secondary hover:bg-surface-tertiary transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-white transition-colors"
+              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-white shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all hover:scale-[1.03]"
             >
               {loading ? 'Creating...' : 'Create'}
             </button>

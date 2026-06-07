@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Trash2 } from 'lucide-react';
 
 export default function ArtistCard({ artist, onClick, onDelete }) {
   return (
@@ -45,9 +46,7 @@ export default function ArtistCard({ artist, onClick, onDelete }) {
         className="absolute top-2 right-2 p-1.5 rounded-lg bg-overlay/60 text-content-tertiary hover:text-danger hover:bg-overlay/80 opacity-0 group-hover:opacity-100 transition-all"
         title="Delete artist"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <Trash2 className="w-4 h-4" />
       </button>
     </motion.div>
   );

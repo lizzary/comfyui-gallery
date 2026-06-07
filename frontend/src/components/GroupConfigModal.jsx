@@ -151,7 +151,7 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
                         onChange={(val) => handleKeywordChange(pair.id, ki, val)}
                         placeholder={type === 'tag' ? 'e.g. girl' : 'e.g. masterpiece'}
                         className="flex-1"
-                        inputClassName="w-full bg-overlay/30 border border-edge-subtle/10 rounded-lg px-3 py-1.5 text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-edge-subtle/30 transition-colors"
+                        inputClassName="w-full bg-surface-tertiary border border-edge-primary rounded-lg px-3 py-1.5 text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-accent/50 transition-colors"
                       />
                       {pair.keywords.length > 1 && (
                         <button

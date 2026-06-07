@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Search } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import TagPromptSuggest from './TagPromptSuggest';
 
@@ -43,8 +43,9 @@ export default function Layout({ children, onSearch }) {
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-sm font-medium text-white transition-colors"
+                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-sm font-medium text-white shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all hover:scale-[1.03] inline-flex items-center gap-2"
               >
+                <Search className="w-4 h-4" />
                 Search
               </button>
             </form>

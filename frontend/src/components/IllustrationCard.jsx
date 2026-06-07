@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Star, Trash2 } from 'lucide-react';
 
 export default function IllustrationCard({
   illustration,
@@ -70,16 +71,18 @@ export default function IllustrationCard({
           {onSetCover && (
             <button
               onClick={(e) => { e.stopPropagation(); onSetCover(illustration); }}
-              className="px-2 py-1 rounded text-xs bg-accent/80 hover:bg-accent text-white transition-colors"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-accent/85 hover:bg-accent text-white shadow-lg shadow-accent/20 transition-all hover:scale-105 inline-flex items-center gap-1"
             >
+              <Star className="w-3 h-3" />
               Set Cover
             </button>
           )}
           {onDelete && (
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(illustration); }}
-              className="px-2 py-1 rounded text-xs bg-danger/80 hover:bg-danger text-white transition-colors"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-danger/85 hover:bg-danger text-white shadow-lg shadow-danger/20 transition-all hover:scale-105 inline-flex items-center gap-1"
             >
+              <Trash2 className="w-3 h-3" />
               Delete
             </button>
           )}

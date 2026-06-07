@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Star, Trash2, Info } from 'lucide-react';
 import { getIllustrationMetadata, updateIllustration } from '../api';
 import TagPromptSuggest from './TagPromptSuggest';
 
@@ -188,28 +189,31 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
             {onSetCover && (
               <button
                 onClick={() => onSetCover(currentIllustration)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent/70 hover:bg-accent text-white transition-colors"
+                className="px-3.5 py-2 rounded-xl text-xs font-medium bg-accent/85 hover:bg-accent text-white shadow-lg shadow-accent/25 transition-all hover:scale-105 inline-flex items-center gap-1.5"
               >
+                <Star className="w-3.5 h-3.5" />
                 Set Cover
               </button>
             )}
             {onDelete && (
               <button
                 onClick={() => onDelete(currentIllustration)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-danger/70 hover:bg-danger text-white transition-colors"
+                className="px-3.5 py-2 rounded-xl text-xs font-medium bg-danger/85 hover:bg-danger text-white shadow-lg shadow-danger/25 transition-all hover:scale-105 inline-flex items-center gap-1.5"
               >
+                <Trash2 className="w-3.5 h-3.5" />
                 Delete
               </button>
             )}
 
             <button
               onClick={() => setShowDetails(!showDetails)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-sm font-medium shadow-lg transition-all hover:scale-105 inline-flex items-center gap-2 ${
                 showDetails
-                  ? 'bg-accent text-white'
+                  ? 'bg-accent text-white shadow-accent/25'
                   : 'bg-white/10 hover:bg-white/20 text-gray-300'
               }`}
             >
+              <Info className="w-4 h-4" />
               Details
             </button>
           </div>
@@ -357,14 +361,14 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                           <div className="flex items-center gap-2">
                             <button
                               onClick={cancelEdit}
-                              className="px-3 py-1 rounded-lg text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-300 hover:bg-white/5 transition-all"
                             >
                               Cancel
                             </button>
                             <button
                               onClick={saveTags}
                               disabled={savingTags}
-                              className="px-3 py-1 rounded-lg text-xs font-medium bg-accent hover:bg-accent-hover disabled:opacity-50 text-white transition-colors"
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent hover:bg-accent-hover disabled:opacity-50 text-white shadow-lg shadow-accent/25 transition-all hover:scale-105"
                             >
                               {savingTags ? 'Saving...' : 'Save'}
                             </button>

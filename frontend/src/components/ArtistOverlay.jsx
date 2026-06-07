@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowUpDown, Layers, Settings, Upload, Download, Trash2, X } from 'lucide-react';
 import { listIllustrations, uploadIllustrations, updateArtist, deleteIllustration } from '../api';
 import { useToast } from './Toast';
 import ConfirmModal from './ConfirmModal';
 import Lightbox from './Lightbox';
 import IllustrationCard from './IllustrationCard';
 import ColorGroup from './ColorGroup';
+import DropdownSelect from './DropdownSelect';
 import GroupConfigModal from './GroupConfigModal';
 import useGroupConfig from '../hooks/useGroupConfig';
 import { matchesTagPair, matchesPromptPair, groupIllustrations, GROUP_BY_OPTIONS } from '../utils/grouping';
@@ -300,72 +302,56 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
           <div className="flex items-center gap-3">
             {/* Sort controls */}
             {illustrations.length > 1 && (
-              <div className="flex items-center gap-1">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-surface-tertiary border border-edge-secondary rounded-lg px-3 py-1.5 text-xs text-content-secondary focus:outline-none focus:border-accent/50 appearance-none cursor-pointer"
-                >
-                  {SORT_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-surface-secondary text-content-primary">
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-                {sortBy && (
-                  <button
-                    onClick={() => setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))}
-                    className="p-1.5 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-secondary transition-colors"
-                    title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-                  >
-                    {sortOrder === 'asc' ? (
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    ) : (
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    )}
-                  </button>
-                )}
-              </div>
+              <DropdownSelect
+                icon={ArrowUpDown}
+                label="Sort"
+                options={SORT_OPTIONS}
+                value={sortBy}
+                onChange={setSortBy}
+                rightElement={
+                  sortBy ? (
+                    <button
+                      onClick={() => setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))}
+                      className="p-2 rounded-lg bg-surface-tertiary border border-edge-secondary hover:border-edge-primary text-content-tertiary hover:text-content-primary transition-all"
+                      title={sortOrder === 'asc' ? 'Ascending — click to switch' : 'Descending — click to switch'}
+                    >
+                      <span className="text-xs font-medium">
+                        {sortOrder === 'asc' ? 'Asc' : 'Desc'}
+                      </span>
+                    </button>
+                  ) : null
+                }
+              />
             )}
 
             {/* Group By controls */}
             {illustrations.length > 1 && (
-              <div className="flex items-center gap-1">
-                <select
-                  value={groupBy}
-                  onChange={(e) => { setGroupBy(e.target.value); setCollapsedGroups(new Set()); }}
-                  className="bg-surface-tertiary border border-edge-secondary rounded-lg px-3 py-1.5 text-xs text-content-secondary focus:outline-none focus:border-accent/50 appearance-none cursor-pointer"
-                >
-                  {GROUP_BY_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-surface-secondary text-content-primary">
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-                {groupBy !== 'none' && (
-                  <button
-                    onClick={() => setShowGroupConfig(true)}
-                    className="p-1.5 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-secondary transition-colors"
-                    title={`Configure ${groupBy === 'tag' ? 'Tag' : 'Prompt'} Groups`}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </button>
-                )}
-              </div>
+              <DropdownSelect
+                icon={Layers}
+                label="Group"
+                options={GROUP_BY_OPTIONS}
+                value={groupBy}
+                onChange={(v) => { setGroupBy(v); setCollapsedGroups(new Set()); }}
+                rightElement={
+                  groupBy !== 'none' ? (
+                    <button
+                      onClick={() => setShowGroupConfig(true)}
+                      className="p-2 rounded-lg bg-surface-tertiary border border-edge-secondary hover:border-edge-primary text-content-tertiary hover:text-content-primary transition-all"
+                      title={`Configure ${groupBy === 'tag' ? 'Tag' : 'Prompt'} Groups`}
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                    </button>
+                  ) : null
+                }
+              />
             )}
 
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-50 text-sm font-medium text-white transition-colors"
+              className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-50 text-sm font-medium text-white shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all hover:scale-[1.03] inline-flex items-center gap-2"
             >
+              <Upload className="w-4 h-4" />
               {uploading ? 'Uploading...' : 'Upload'}
             </button>
             <input
@@ -449,27 +435,24 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleBatchDownload}
-                className="px-4 py-2 rounded-lg bg-surface-tertiary hover:bg-edge-secondary text-sm text-content-secondary transition-colors flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-surface-tertiary hover:bg-edge-secondary text-sm text-content-secondary hover:text-content-primary transition-all flex items-center gap-2 font-medium border border-transparent hover:border-edge-primary"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
+                <Download className="w-4 h-4" />
                 Download
               </button>
               <button
                 onClick={handleBatchDelete}
                 disabled={batchDeleting}
-                className="px-4 py-2 rounded-lg bg-danger hover:bg-danger-hover disabled:opacity-50 text-sm text-white transition-colors flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-danger hover:bg-danger-hover disabled:opacity-50 text-sm text-white shadow-lg shadow-danger/20 hover:shadow-danger/30 transition-all hover:scale-[1.02] flex items-center gap-2 font-medium"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+                <Trash2 className="w-4 h-4" />
                 {batchDeleting ? 'Deleting...' : 'Delete'}
               </button>
               <button
                 onClick={() => { setSelectedIds(new Set()); setLastClickedId(null); }}
-                className="px-3 py-2 rounded-lg text-sm text-content-muted hover:text-content-secondary transition-colors"
+                className="px-3 py-2 rounded-lg text-sm text-content-muted hover:text-content-secondary transition-colors flex items-center gap-1.5"
               >
+                <X className="w-4 h-4" />
                 Clear
               </button>
             </div>
