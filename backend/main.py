@@ -16,10 +16,29 @@ from models import (
     IllustrationResponse, IllustrationUpdate,
     SearchResult,
 )
-from utils import extract_metadata, extract_tags, create_thumbnail, get_image_info
+from utils import extract_metadata, extract_tags, create_thumbnail, get_image_info, set_use_gpu
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
+SETTINGS_PATH = os.path.join(BASE_DIR, "settings.json")
+
+
+def load_settings():
+    try:
+        with open(SETTINGS_PATH, "r") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"auto_tag": True, "gpu_enabled": False}
+
+
+def save_settings(data):
+    with open(SETTINGS_PATH, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+# Apply GPU setting on startup
+_settings = load_settings()
+set_use_gpu(_settings.get("gpu_enabled", False))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -257,7 +276,10 @@ def upload_illustrations(
             raise HTTPException(400, f"Failed to read image: {safe_filename}")
 
         try:
-            tags = extract_tags(image)
+            if load_settings().get("auto_tag", True):
+                tags = extract_tags(image)
+            else:
+                tags = ""
             width, height, mime_type = get_image_info(image)
 
             conn = get_db()
@@ -557,6 +579,26 @@ def list_prompts():
                     if trimmed:
                         unique.add(trimmed)
     return sorted(unique)
+
+
+# ── Settings ────────────────────────────────────────────
+
+@app.get("/api/settings")
+def get_settings():
+    return load_settings()
+
+
+@app.put("/api/settings")
+def update_settings(body: dict):
+    current = load_settings()
+    allowed = {"auto_tag", "gpu_enabled"}
+    for key in body:
+        if key in allowed:
+            current[key] = bool(body[key])
+    save_settings(current)
+    # Apply GPU setting immediately
+    set_use_gpu(current.get("gpu_enabled", False))
+    return current
 
 
 if __name__ == "__main__":

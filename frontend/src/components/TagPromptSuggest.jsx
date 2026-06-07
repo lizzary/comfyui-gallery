@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { listTags, listPrompts } from '../api';
+import { useLocale } from '../contexts/LocaleContext';
 
 // Module-level cache shared across all instances
 const _cache = { tag: null, prompt: null, mixed: null };
@@ -20,6 +21,7 @@ export default function TagPromptSuggest({
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
+  const { t } = useLocale();
 
   // Fetch full list once, using cache
   useEffect(() => {
@@ -166,9 +168,9 @@ export default function TagPromptSuggest({
   const resolveItemText = (item) => (type === 'mixed' ? item.text : item);
 
   const typeLabel = (item) => {
-    if (type !== 'mixed') return type;
-    if (item.types.length === 2) return 'tag & prompt';
-    return item.types[0];
+    if (type !== 'mixed') return type === 'tag' ? t('tagPromptSuggest.tag') : t('tagPromptSuggest.prompt');
+    if (item.types.length === 2) return t('tagPromptSuggest.tagAndPrompt');
+    return item.types[0] === 'tag' ? t('tagPromptSuggest.tag') : t('tagPromptSuggest.prompt');
   };
 
   return (

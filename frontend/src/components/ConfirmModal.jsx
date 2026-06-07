@@ -1,14 +1,18 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocale } from '../contexts/LocaleContext';
 
 export default function ConfirmModal({
   title,
   message,
-  confirmText = '确认',
-  cancelText = '取消',
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
   danger = false,
 }) {
+  const { t } = useLocale();
+  const confirm = confirmText ?? t('confirmModal.confirm');
+  const cancel = cancelText ?? t('confirmModal.cancel');
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[60] flex items-center justify-center">
@@ -37,7 +41,7 @@ export default function ConfirmModal({
               onClick={onCancel}
               className="px-5 py-2.5 rounded-xl text-sm font-medium bg-surface-tertiary hover:bg-edge-secondary text-content-secondary transition-all"
             >
-              {cancelText}
+              {cancel}
             </button>
             <button
               onClick={onConfirm}
@@ -47,7 +51,7 @@ export default function ConfirmModal({
                   : 'bg-accent hover:bg-accent-hover shadow-accent/20 hover:shadow-accent/30'
               }`}
             >
-              {confirmText}
+              {confirm}
             </button>
           </div>
         </motion.div>

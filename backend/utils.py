@@ -41,6 +41,17 @@ _tagger_rating_indexes = None
 _tagger_general_indexes = None
 _tagger_char_indexes = None
 _tagger_transform = None
+_use_gpu = False
+
+
+def set_use_gpu(enabled: bool):
+    """Set whether the tagger should use GPU acceleration."""
+    global _use_gpu, _tagger_model
+    _use_gpu = enabled
+    # Reset model if already loaded so it gets reloaded on next tag extraction
+    if _tagger_model is not None:
+        logger.info("GPU setting changed, reloading tagger model on next extraction")
+        _tagger_model = None
 
 
 def _load_tagger():
@@ -51,10 +62,14 @@ def _load_tagger():
     if _tagger_model is not None:
         return
 
-    logger.info("Loading WD EVA02-Large Tagger v3 (first call downloads ~800MB weights)...")
+    device = "cuda" if (_use_gpu and torch.cuda.is_available()) else "cpu"
+    if _use_gpu and not torch.cuda.is_available():
+        logger.warning("GPU enabled but CUDA not available, falling back to CPU")
+
+    logger.info("Loading WD EVA02-Large Tagger v3 on %s (first call downloads ~800MB weights)...", device)
     model = timm.create_model(f"hf_hub:{MODEL_REPO}", pretrained=True)
     model.eval()
-    _tagger_model = model.to("cpu")
+    _tagger_model = model.to(device)
 
     logger.info("Downloading tag labels...")
     labels_path = hf_hub_download(

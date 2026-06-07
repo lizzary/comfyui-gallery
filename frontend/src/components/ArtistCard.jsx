@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
+import { useLocale } from '../contexts/LocaleContext';
 
 export default function ArtistCard({ artist, onClick, onDelete, quality = 'low' }) {
+  const { t } = useLocale();
   return (
     <motion.div
       layout
@@ -26,7 +28,7 @@ export default function ArtistCard({ artist, onClick, onDelete, quality = 'low' 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
             </svg>
-            <span className="text-xs">No Cover</span>
+            <span className="text-xs">{t('artistCard.noCover')}</span>
           </div>
         )}
       </div>
@@ -34,7 +36,7 @@ export default function ArtistCard({ artist, onClick, onDelete, quality = 'low' 
       {/* Info */}
       <div className="p-3">
         <h3 className="text-sm font-semibold text-content-primary truncate">{artist.name}</h3>
-        <p className="text-xs text-content-muted mt-0.5">{artist.illustration_count} illustrations</p>
+        <p className="text-xs text-content-muted mt-0.5">{t('artistCard.illustrationCount', { count: artist.illustration_count })}</p>
       </div>
 
       {/* Delete button */}
@@ -44,7 +46,7 @@ export default function ArtistCard({ artist, onClick, onDelete, quality = 'low' 
           onDelete(artist);
         }}
         className="absolute top-2 right-2 p-1.5 rounded-lg bg-overlay/60 text-content-tertiary hover:text-danger hover:bg-overlay/80 opacity-0 group-hover:opacity-100 transition-all"
-        title="Delete artist"
+        title={t('artistCard.deleteTitle')}
       >
         <Trash2 className="w-4 h-4" />
       </button>

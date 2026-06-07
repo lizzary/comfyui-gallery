@@ -1,6 +1,8 @@
 import { AnimatePresence } from 'framer-motion';
+import { useLocale } from '../contexts/LocaleContext';
 
 export default function ColorGroup({ group, collapsed, onToggle, children }) {
+  const { t } = useLocale();
   return (
     <div
       className="rounded-xl mb-5 overflow-hidden border"
@@ -22,8 +24,8 @@ export default function ColorGroup({ group, collapsed, onToggle, children }) {
           className="w-3 h-3 rounded-full shrink-0"
           style={{ backgroundColor: group.borderColor }}
         />
-        <span className="text-sm font-medium text-content-secondary">{group.name}</span>
-        <span className="text-xs text-content-muted">({group.items.length})</span>
+        <span className="text-sm font-medium text-content-secondary">{group.name === 'Other' ? t('colorGroup.other') : group.name}</span>
+        <span className="text-xs text-content-muted">{t('colorGroup.count', { count: group.items.length })}</span>
       </button>
       {!collapsed && (
         <div className="px-4 pb-4">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listPrompts } from '../api';
+import { useLocale } from '../contexts/LocaleContext';
 
 export default function PromptsPage() {
   const [prompts, setPrompts] = useState([]);
@@ -8,6 +9,7 @@ export default function PromptsPage() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('');
   const navigate = useNavigate();
+  const { t } = useLocale();
 
   useEffect(() => {
     listPrompts()
@@ -34,21 +36,21 @@ export default function PromptsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h1 className="text-xl font-semibold">All Prompts</h1>
-            <span className="text-sm text-content-muted">{prompts.length} unique prompt terms</span>
+            <h1 className="text-xl font-semibold">{t('prompts.heading')}</h1>
+            <span className="text-sm text-content-muted">{t('prompts.subtitle', { count: prompts.length })}</span>
           </div>
           <input
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter prompts..."
+            placeholder={t('prompts.filterPlaceholder')}
             className="bg-surface-tertiary border border-edge-secondary rounded-lg px-4 py-2 text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-accent/50 w-64"
           />
         </div>
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center h-64 text-content-muted">Loading...</div>
+          <div className="flex items-center justify-center h-64 text-content-muted">{t('prompts.loading')}</div>
         ) : error ? (
           <div className="flex items-center justify-center h-64 text-danger">{error}</div>
         ) : (
@@ -62,7 +64,7 @@ export default function PromptsPage() {
               </span>
             ))}
             {filtered.length === 0 && (
-              <p className="text-content-muted text-sm">No prompts found.</p>
+              <p className="text-content-muted text-sm">{t('prompts.empty')}</p>
             )}
           </div>
         )}

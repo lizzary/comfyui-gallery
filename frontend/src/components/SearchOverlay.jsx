@@ -13,6 +13,7 @@ import TagPromptSuggest from './TagPromptSuggest';
 import GroupConfigModal from './GroupConfigModal';
 import useGroupConfig from '../hooks/useGroupConfig';
 import { matchesTagPair, matchesPromptPair, groupIllustrations, GROUP_BY_OPTIONS } from '../utils/grouping';
+import { useLocale } from '../contexts/LocaleContext';
 
 // ── Main component ───────────────────────────────────────
 
@@ -32,6 +33,19 @@ export default function SearchOverlay({ query, onClose }) {
   const [filterScope, setFilterScope] = useState('all');
   const { addToast } = useToast();
   const [quality, setQuality] = useQuality();
+  const { t } = useLocale();
+
+  const translatedGroupOptions = useMemo(() => [
+    { value: 'none', label: t('dropdown.noGrouping') },
+    { value: 'tag', label: t('dropdown.groupByTag') },
+    { value: 'prompt', label: t('dropdown.groupByPrompt') },
+  ], [t]);
+
+  const translatedQualityOptions = useMemo(() => [
+    { value: 'low', label: t('quality.low') },
+    { value: 'normal', label: t('quality.normal') },
+    { value: 'original', label: t('quality.original') },
+  ], [t]);
 
   const tagGroupConfig = useGroupConfig('tag');
   const promptGroupConfig = useGroupConfig('prompt');
@@ -120,9 +134,9 @@ export default function SearchOverlay({ query, onClose }) {
         total: prev.total - 1,
       } : prev);
       setSelectedIds((prev) => { const next = new Set(prev); next.delete(deleteTarget.id); return next; });
-      addToast('Illustration deleted', 'success');
+      addToast(t('searchOverlay.toast.deleted'), 'success');
     } catch (err) {
-      addToast(err.message || 'Failed to delete', 'error');
+      addToast(err.message || t('searchOverlay.toast.deleteFailed'), 'error');
     } finally {
       setDeleteTarget(null);
     }
@@ -179,15 +193,15 @@ export default function SearchOverlay({ query, onClose }) {
       total: prev.total - (ids.length - failed),
     } : prev);
     if (failed === 0) {
-      addToast(`${ids.length} illustration(s) deleted`, 'success');
+      addToast(t('searchOverlay.toast.batchDeleted', { n: ids.length }), 'success');
     } else {
-      addToast(`${ids.length - failed} deleted, ${failed} failed`, 'error');
+      addToast(t('searchOverlay.toast.batchPartial', { succeeded: ids.length - failed, failed }), 'error');
     }
   };
 
   const handleBatchDownload = async () => {
     const selected = items.filter((i) => selectedIds.has(i.id));
-    addToast(`Downloading ${selected.length} file(s)...`, 'success');
+    addToast(t('searchOverlay.toast.downloading', { n: selected.length }), 'success');
     for (const ill of selected) {
       try {
         const res = await fetch(`http://localhost:8000${ill.file_url}`);
@@ -215,9 +229,9 @@ export default function SearchOverlay({ query, onClose }) {
         total: prev.total - 1,
       } : prev);
       setSelectedIds((prev) => { const next = new Set(prev); next.delete(ill.id); return next; });
-      addToast('Illustration deleted', 'success');
+      addToast(t('searchOverlay.toast.deleted'), 'success');
     } catch (err) {
-      addToast(err.message || 'Failed to delete', 'error');
+      addToast(err.message || t('searchOverlay.toast.deleteFailed'), 'error');
     }
   };
 
@@ -249,14 +263,14 @@ export default function SearchOverlay({ query, onClose }) {
             </svg>
           </button>
           <h2 className="text-lg font-semibold text-content-primary">
-            Search: <span className="text-accent">{query}</span>
+            {t('searchOverlay.heading')}<span className="text-accent">{query}</span>
           </h2>
           {results && (
             <>
               <span className="text-sm text-content-muted">
                 {filterQuery.trim()
-                  ? `${filteredItems.length} of ${results.total} results`
-                  : `${results.total} results`}
+                  ? t('searchOverlay.filteredCount', { filteredCount: filteredItems.length, total: results.total })
+                  : t('searchOverlay.totalCount', { total: results.total })}
               </span>
               {filterQuery.trim() && filterScope !== 'all' && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-medium uppercase">
@@ -275,15 +289,15 @@ export default function SearchOverlay({ query, onClose }) {
               onChange={(v) => { setFilterQuery(v); if (!v) setFilterScope('all'); }}
               onSelect={(v, scope) => { setFilterQuery(v); setFilterScope(scope); }}
               onEnter={(v) => { setFilterQuery(v); setFilterScope('all'); }}
-              placeholder="Filter by tag or prompt..."
+              placeholder={t('searchOverlay.filter.placeholder')}
               className="w-52"
               inputClassName="w-full pl-3 pr-3 py-2 rounded-lg bg-surface-tertiary border border-edge-secondary text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-accent/50 transition-colors"
             />
             {items.length > 1 && (
               <DropdownSelect
                 icon={Layers}
-                label="Group"
-                options={GROUP_BY_OPTIONS}
+                label={t('searchOverlay.group.label')}
+                options={translatedGroupOptions}
                 value={groupBy}
                 onChange={(v) => { setGroupBy(v); setCollapsedGroups(new Set()); }}
                 rightElement={
@@ -291,7 +305,7 @@ export default function SearchOverlay({ query, onClose }) {
                     <button
                       onClick={() => setShowGroupConfig(true)}
                       className="p-2 rounded-lg bg-surface-tertiary border border-edge-secondary hover:border-edge-primary text-content-tertiary hover:text-content-primary transition-all"
-                      title={`Configure ${groupBy === 'tag' ? 'Tag' : 'Prompt'} Groups`}
+                      title={groupBy === 'tag' ? t('searchOverlay.group.configTag') : t('searchOverlay.group.configPrompt')}
                     >
                       <Settings className="w-3.5 h-3.5" />
                     </button>
@@ -301,8 +315,8 @@ export default function SearchOverlay({ query, onClose }) {
             )}
             <DropdownSelect
               icon={Monitor}
-              label="Quality"
-              options={QUALITY_OPTIONS}
+              label={t('searchOverlay.quality.label')}
+              options={translatedQualityOptions}
               value={quality}
               onChange={setQuality}
             />
@@ -312,7 +326,7 @@ export default function SearchOverlay({ query, onClose }) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <div className="flex items-center justify-center h-64 text-content-muted text-sm">Searching...</div>
+            <div className="flex items-center justify-center h-64 text-content-muted text-sm">{t('searchOverlay.searching')}</div>
           ) : error ? (
             <div className="flex items-center justify-center h-64 text-danger text-sm">{error}</div>
           ) : !results || results.items.length === 0 ? (
@@ -320,7 +334,7 @@ export default function SearchOverlay({ query, onClose }) {
               <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
-              <p className="text-sm">No matching illustrations found</p>
+              <p className="text-sm">{t('searchOverlay.empty')}</p>
             </div>
           ) : groupedIllustrations ? (
             /* Grouped rendering */
@@ -353,9 +367,9 @@ export default function SearchOverlay({ query, onClose }) {
         {/* Key hints */}
         {selectedIds.size === 0 && items.length > 0 && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[55] px-4 py-2 rounded-lg bg-overlay/50 backdrop-blur text-xs text-content-muted flex items-center gap-3 select-none">
-            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Ctrl+Click</kbd> multi-select</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Ctrl+Click</kbd> {t('searchOverlay.keyHints.ctrlClick')}</span>
             <span className="text-content-muted/50">|</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Shift+Click</kbd> range select</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Shift+Click</kbd> {t('searchOverlay.keyHints.shiftClick')}</span>
           </div>
         )}
 
@@ -367,14 +381,14 @@ export default function SearchOverlay({ query, onClose }) {
             exit={{ y: 80, opacity: 0 }}
             className="fixed bottom-0 left-0 right-0 z-[55] bg-surface-secondary border-t border-edge-primary px-6 py-4 flex items-center justify-between shadow-2xl"
           >
-            <span className="text-sm text-content-secondary">{selectedIds.size} selected</span>
+            <span className="text-sm text-content-secondary">{t('searchOverlay.batch.selected', { count: selectedIds.size })}</span>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleBatchDownload}
                 className="px-4 py-2 rounded-xl bg-surface-tertiary hover:bg-edge-secondary text-sm text-content-secondary hover:text-content-primary transition-all flex items-center gap-2 font-medium border border-transparent hover:border-edge-primary"
               >
                 <Download className="w-4 h-4" />
-                Download
+                {t('searchOverlay.batch.download')}
               </button>
               <button
                 onClick={handleBatchDelete}
@@ -382,14 +396,14 @@ export default function SearchOverlay({ query, onClose }) {
                 className="px-4 py-2 rounded-xl bg-danger hover:bg-danger-hover disabled:opacity-50 text-sm text-white shadow-lg shadow-danger/20 hover:shadow-danger/30 transition-all hover:scale-[1.02] flex items-center gap-2 font-medium"
               >
                 <Trash2 className="w-4 h-4" />
-                {batchDeleting ? 'Deleting...' : 'Delete'}
+                {batchDeleting ? t('searchOverlay.batch.deleting') : t('searchOverlay.batch.delete')}
               </button>
               <button
                 onClick={() => { setSelectedIds(new Set()); setLastClickedId(null); }}
                 className="px-3 py-2 rounded-lg text-sm text-content-muted hover:text-content-secondary transition-colors flex items-center gap-1.5"
               >
                 <X className="w-4 h-4" />
-                Clear
+                {t('searchOverlay.batch.clear')}
               </button>
             </div>
           </motion.div>
@@ -432,9 +446,10 @@ export default function SearchOverlay({ query, onClose }) {
       {/* Confirm: delete illustration */}
       {deleteTarget && (
         <ConfirmModal
-          title="Delete Illustration"
-          message={`Are you sure you want to delete "${deleteTarget.original_filename}"?`}
-          confirmText="Delete"
+          title={t('searchOverlay.delete.title')}
+          message={t('searchOverlay.delete.message', { filename: deleteTarget.original_filename })}
+          confirmText={t('searchOverlay.delete.confirm')}
+          cancelText={t('searchOverlay.delete.cancel')}
           danger
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}

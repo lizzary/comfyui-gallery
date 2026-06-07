@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Trash2 } from 'lucide-react';
+import { useLocale } from '../contexts/LocaleContext';
 
 export default function IllustrationCard({
   illustration,
@@ -14,6 +15,7 @@ export default function IllustrationCard({
   quality = 'low',
 }) {
   const [imgError, setImgError] = useState(false);
+  const { t } = useLocale();
 
   const handleClick = (e) => {
     if (e.ctrlKey || e.metaKey) {
@@ -53,7 +55,7 @@ export default function IllustrationCard({
         onClick={handleClick}
       >
         {imgError ? (
-          <span className="text-content-muted text-xs">Load failed</span>
+          <span className="text-content-muted text-xs">{t('illustrationCard.loadFailed')}</span>
         ) : (
           <img
             src={`http://localhost:8000${illustration.thumbnail_url}?quality=${quality}`}
@@ -75,7 +77,7 @@ export default function IllustrationCard({
               className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-accent/85 hover:bg-accent text-white shadow-lg shadow-accent/20 transition-all hover:scale-105 inline-flex items-center gap-1"
             >
               <Star className="w-3 h-3" />
-              Set Cover
+              {t('illustrationCard.setCover')}
             </button>
           )}
           {onDelete && (
@@ -84,7 +86,7 @@ export default function IllustrationCard({
               className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-danger/85 hover:bg-danger text-white shadow-lg shadow-danger/20 transition-all hover:scale-105 inline-flex items-center gap-1"
             >
               <Trash2 className="w-3 h-3" />
-              Delete
+              {t('illustrationCard.delete')}
             </button>
           )}
         </div>

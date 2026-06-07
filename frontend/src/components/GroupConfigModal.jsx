@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import TagPromptSuggest from './TagPromptSuggest';
+import { useLocale } from '../contexts/LocaleContext';
 
 export default function GroupConfigModal({ type, pairs, palette, otherColor, onSave, onClose }) {
-  const label = type === 'tag' ? 'Tag' : 'Prompt';
+  const { t } = useLocale();
 
   // Local editing copy — changes not persisted until Save
   const [editingPairs, setEditingPairs] = useState(() =>
@@ -82,7 +83,7 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
         {/* Header */}
         <div className="px-6 py-4 border-b border-edge-primary flex items-center justify-between">
           <h3 className="text-base font-semibold text-content-primary">
-            Configure {label} Groups
+            {type === 'tag' ? t('groupConfig.titleTag') : t('groupConfig.titlePrompt')}
           </h3>
           <button
             onClick={onClose}
@@ -97,18 +98,16 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
         {/* Body */}
         <div className="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-4">
           <p className="text-xs text-content-muted leading-relaxed">
-            Each group defines a set of keywords. An illustration is placed in the{' '}
-            <strong className="text-content-tertiary">first</strong> group where{' '}
-            <strong className="text-content-tertiary">all</strong> keywords match.
+            {t('groupConfig.help.general')}
             {type === 'prompt' && (
-              <> Matching searches both the Positive and Negative prompt text.</>
+              <> {t('groupConfig.help.prompt')}</>
             )}
-            {' '}Unmatched illustrations go to &ldquo;Other&rdquo;.
+            {' '}{t('groupConfig.help.other')}
           </p>
 
           {editingPairs.length === 0 && (
             <div className="text-center py-6 text-content-muted text-sm">
-              No groups defined yet. Click &ldquo;Add Group&rdquo; below.
+              {t('groupConfig.empty')}
             </div>
           )}
 
@@ -128,13 +127,13 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
                       style={{ backgroundColor: color.border }}
                     />
                     <span className="text-sm font-medium text-content-secondary">
-                      Group {pi + 1}
+                      {t('groupConfig.groupHeading', { n: pi + 1 })}
                     </span>
                   </div>
                   <button
                     onClick={() => handleRemovePair(pair.id)}
                     className="p-1 rounded-lg hover:bg-edge-subtle/10 text-content-muted hover:text-danger transition-colors"
-                    title="Remove group"
+                    title={t('groupConfig.removeGroup')}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -149,7 +148,7 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
                         type={type}
                         value={kw}
                         onChange={(val) => handleKeywordChange(pair.id, ki, val)}
-                        placeholder={type === 'tag' ? 'e.g. girl' : 'e.g. masterpiece'}
+                        placeholder={type === 'tag' ? t('groupConfig.keywordPlaceholder.tag') : t('groupConfig.keywordPlaceholder.prompt')}
                         className="flex-1"
                         inputClassName="w-full bg-surface-tertiary border border-edge-primary rounded-lg px-3 py-1.5 text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-accent/50 transition-colors"
                       />
@@ -172,7 +171,7 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Add keyword
+                    {t('groupConfig.addKeyword')}
                   </button>
                 </div>
               </div>
@@ -186,7 +185,7 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Add Group
+            {t('groupConfig.addGroup')}
           </button>
 
           {/* Other group preview */}
@@ -198,8 +197,8 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
               className="w-3 h-3 rounded-full shrink-0"
               style={{ backgroundColor: otherColor.border }}
             />
-            <span className="text-sm text-content-tertiary">Other</span>
-            <span className="text-xs text-content-muted">— unmatched illustrations</span>
+            <span className="text-sm text-content-tertiary">{t('groupConfig.other')}</span>
+            <span className="text-xs text-content-muted">{t('groupConfig.otherDesc')}</span>
           </div>
         </div>
 
@@ -209,13 +208,13 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
             onClick={onClose}
             className="px-4 py-2 rounded-lg text-sm text-content-muted hover:text-content-secondary transition-colors"
           >
-            Cancel
+            {t('groupConfig.cancel')}
           </button>
           <button
             onClick={handleSave}
             className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-sm font-medium text-white transition-colors"
           >
-            Save
+            {t('groupConfig.save')}
           </button>
         </div>
       </motion.div>

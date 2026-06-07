@@ -13,13 +13,7 @@ import TagPromptSuggest from './TagPromptSuggest';
 import GroupConfigModal from './GroupConfigModal';
 import useGroupConfig from '../hooks/useGroupConfig';
 import { matchesTagPair, matchesPromptPair, groupIllustrations, GROUP_BY_OPTIONS } from '../utils/grouping';
-
-const SORT_OPTIONS = [
-  { value: '', label: 'Default Order' },
-  { value: 'resolution', label: 'Resolution' },
-  { value: 'fileSize', label: 'File Size' },
-  { value: 'dateCreated', label: 'Date Created' },
-];
+import { useLocale } from '../contexts/LocaleContext';
 
 // ── Main component ───────────────────────────────────────
 
@@ -45,6 +39,26 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
   const fileInputRef = useRef(null);
   const { addToast } = useToast();
   const [quality, setQuality] = useQuality();
+  const { t } = useLocale();
+
+  const SORT_OPTIONS = useMemo(() => [
+    { value: '', label: t('artistOverlay.sort.default') },
+    { value: 'resolution', label: t('artistOverlay.sort.resolution') },
+    { value: 'fileSize', label: t('artistOverlay.sort.fileSize') },
+    { value: 'dateCreated', label: t('artistOverlay.sort.dateCreated') },
+  ], [t]);
+
+  const translatedGroupOptions = useMemo(() => [
+    { value: 'none', label: t('dropdown.noGrouping') },
+    { value: 'tag', label: t('dropdown.groupByTag') },
+    { value: 'prompt', label: t('dropdown.groupByPrompt') },
+  ], [t]);
+
+  const translatedQualityOptions = useMemo(() => [
+    { value: 'low', label: t('quality.low') },
+    { value: 'normal', label: t('quality.normal') },
+    { value: 'original', label: t('quality.original') },
+  ], [t]);
 
   const tagGroupConfig = useGroupConfig('tag');
   const promptGroupConfig = useGroupConfig('prompt');
@@ -167,7 +181,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
         await uploadSingleIllustration(artist.id, file);
         succeeded++;
       } catch (err) {
-        setError(`${file.name}: ${err.message || 'Upload failed'}`);
+        setError(`${file.name}: ${err.message || t('artistOverlay.upload.failed')}`);
       }
     }
     setUploadProgress(null);
@@ -184,10 +198,10 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
     try {
       await updateArtist(artist.id, { cover_illustration_id: coverTarget.id });
       setCoverTarget(null);
-      addToast('Cover updated successfully', 'success');
+      addToast(t('artistOverlay.toast.coverUpdated'), 'success');
       if (onArtistUpdated) onArtistUpdated();
     } catch (err) {
-      addToast(err.message || 'Failed to set cover', 'error');
+      addToast(err.message || t('artistOverlay.toast.coverFailed'), 'error');
       setCoverTarget(null);
     }
   };
@@ -198,11 +212,11 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
       await deleteIllustration(deleteTarget.id);
       setDeleteTarget(null);
       setSelectedIds((prev) => { const next = new Set(prev); next.delete(deleteTarget.id); return next; });
-      addToast('Illustration deleted', 'success');
+      addToast(t('artistOverlay.toast.deleted'), 'success');
       await fetchIllustrations();
       if (onArtistUpdated) onArtistUpdated();
     } catch (err) {
-      addToast(err.message || 'Failed to delete', 'error');
+      addToast(err.message || t('artistOverlay.toast.deleteFailed'), 'error');
     }
   };
 
@@ -221,9 +235,9 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
     setSelectedIds(new Set());
     setLastClickedId(null);
     if (failed === 0) {
-      addToast(`${ids.length} illustration(s) deleted`, 'success');
+      addToast(t('artistOverlay.toast.batchDeleted', { n: ids.length }), 'success');
     } else {
-      addToast(`${ids.length - failed} deleted, ${failed} failed`, 'error');
+      addToast(t('artistOverlay.toast.batchPartial', { succeeded: ids.length - failed, failed }), 'error');
     }
     await fetchIllustrations();
     if (onArtistUpdated) onArtistUpdated();
@@ -231,7 +245,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
 
   const handleBatchDownload = async () => {
     const selected = illustrations.filter((i) => selectedIds.has(i.id));
-    addToast(`Downloading ${selected.length} file(s)...`, 'success');
+    addToast(t('artistOverlay.toast.downloading', { n: selected.length }), 'success');
     for (const ill of selected) {
       try {
         const res = await fetch(`http://localhost:8000${ill.file_url}`);
@@ -285,21 +299,21 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
     try {
       await deleteIllustration(ill.id);
       setSelectedIds((prev) => { const next = new Set(prev); next.delete(ill.id); return next; });
-      addToast('Illustration deleted', 'success');
+      addToast(t('artistOverlay.toast.deleted'), 'success');
       await fetchIllustrations();
       if (onArtistUpdated) onArtistUpdated();
     } catch (err) {
-      addToast(err.message || 'Failed to delete', 'error');
+      addToast(err.message || t('artistOverlay.toast.deleteFailed'), 'error');
     }
   };
 
   const handleLightboxSetCover = async (ill) => {
     try {
       await updateArtist(artist.id, { cover_illustration_id: ill.id });
-      addToast('Cover updated successfully', 'success');
+      addToast(t('artistOverlay.toast.coverUpdated'), 'success');
       if (onArtistUpdated) onArtistUpdated();
     } catch (err) {
-      addToast(err.message || 'Failed to set cover', 'error');
+      addToast(err.message || t('artistOverlay.toast.coverFailed'), 'error');
     }
   };
 
@@ -335,8 +349,8 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             <h2 className="text-lg font-semibold text-content-primary">{artist.name}</h2>
             <span className="text-sm text-content-muted">
               {filterQuery.trim()
-                ? `${filteredIllustrations.length} of ${illustrations.length} illustrations`
-                : `${illustrations.length} illustrations`}
+                ? t('artistOverlay.filteredCount', { filteredCount: filteredIllustrations.length, total: illustrations.length })
+                : t('artistOverlay.totalCount', { total: illustrations.length })}
             </span>
             {filterQuery.trim() && filterScope !== 'all' && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-medium uppercase">
@@ -353,7 +367,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
               onChange={(v) => { setFilterQuery(v); if (!v) setFilterScope('all'); }}
               onSelect={(v, scope) => { setFilterQuery(v); setFilterScope(scope); }}
               onEnter={(v) => { setFilterQuery(v); setFilterScope('all'); }}
-              placeholder="Filter by tag or prompt..."
+              placeholder={t('artistOverlay.filter.placeholder')}
               className="w-52"
               inputClassName="w-full pl-3 pr-3 py-2 rounded-lg bg-surface-tertiary border border-edge-secondary text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-accent/50 transition-colors"
             />
@@ -362,7 +376,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             {illustrations.length > 1 && (
               <DropdownSelect
                 icon={ArrowUpDown}
-                label="Sort"
+                label={t('artistOverlay.sort.label')}
                 options={SORT_OPTIONS}
                 value={sortBy}
                 onChange={setSortBy}
@@ -371,10 +385,10 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
                     <button
                       onClick={() => setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))}
                       className="p-2 rounded-lg bg-surface-tertiary border border-edge-secondary hover:border-edge-primary text-content-tertiary hover:text-content-primary transition-all"
-                      title={sortOrder === 'asc' ? 'Ascending — click to switch' : 'Descending — click to switch'}
+                      title={sortOrder === 'asc' ? t('artistOverlay.sort.asc') : t('artistOverlay.sort.desc')}
                     >
                       <span className="text-xs font-medium">
-                        {sortOrder === 'asc' ? 'Asc' : 'Desc'}
+                        {sortOrder === 'asc' ? t('artistOverlay.sort.ascShort') : t('artistOverlay.sort.descShort')}
                       </span>
                     </button>
                   ) : null
@@ -386,8 +400,8 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             {illustrations.length > 1 && (
               <DropdownSelect
                 icon={Layers}
-                label="Group"
-                options={GROUP_BY_OPTIONS}
+                label={t('artistOverlay.group.label')}
+                options={translatedGroupOptions}
                 value={groupBy}
                 onChange={(v) => { setGroupBy(v); setCollapsedGroups(new Set()); }}
                 rightElement={
@@ -395,7 +409,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
                     <button
                       onClick={() => setShowGroupConfig(true)}
                       className="p-2 rounded-lg bg-surface-tertiary border border-edge-secondary hover:border-edge-primary text-content-tertiary hover:text-content-primary transition-all"
-                      title={`Configure ${groupBy === 'tag' ? 'Tag' : 'Prompt'} Groups`}
+                      title={groupBy === 'tag' ? t('artistOverlay.group.configTag') : t('artistOverlay.group.configPrompt')}
                     >
                       <Settings className="w-3.5 h-3.5" />
                     </button>
@@ -407,8 +421,8 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             {/* Quality selector */}
             <DropdownSelect
               icon={Monitor}
-              label="Quality"
-              options={QUALITY_OPTIONS}
+              label={t('artistOverlay.quality.label')}
+              options={translatedQualityOptions}
               value={quality}
               onChange={setQuality}
             />
@@ -419,7 +433,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
               className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-50 text-sm font-medium text-white shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all hover:scale-[1.03] inline-flex items-center gap-2"
             >
               <Upload className="w-4 h-4" />
-              {uploading ? 'Uploading...' : 'Upload'}
+              {uploading ? t('artistOverlay.upload.uploading') : t('artistOverlay.upload.button')}
             </button>
             <input
               ref={fileInputRef}
@@ -437,7 +451,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-danger/30 border border-danger text-danger text-sm">
               {error}
-              <button onClick={() => setError('')} className="ml-2 underline hover:opacity-80">Dismiss</button>
+              <button onClick={() => setError('')} className="ml-2 underline hover:opacity-80">{t('home.dismiss')}</button>
             </div>
           )}
 
@@ -447,7 +461,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-content-primary flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
-                  Uploading {uploadProgress.current} of {uploadProgress.total}
+                  {t('artistOverlay.upload.progress', { current: uploadProgress.current, total: uploadProgress.total })}
                 </span>
                 <span className="text-xs text-content-muted truncate ml-4 max-w-[300px]">
                   {uploadProgress.filename}
@@ -465,14 +479,14 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
           )}
 
           {loading ? (
-            <div className="flex items-center justify-center h-64 text-content-muted text-sm">Loading...</div>
+            <div className="flex items-center justify-center h-64 text-content-muted text-sm">{t('artistOverlay.loading')}</div>
           ) : illustrations.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-content-muted">
               <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
               </svg>
-              <p className="text-sm">No illustrations yet. Click Upload above.</p>
+              <p className="text-sm">{t('artistOverlay.empty')}</p>
             </div>
           ) : groupedIllustrations ? (
             /* Grouped rendering */
@@ -505,11 +519,11 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
         {/* Key hints */}
         {selectedIds.size === 0 && illustrations.length > 0 && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[55] px-4 py-2 rounded-lg bg-overlay/50 backdrop-blur text-xs text-content-muted flex items-center gap-3 select-none">
-            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Click</kbd> to view</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Click</kbd> {t('artistOverlay.keyHints.click')}</span>
             <span className="text-content-muted/50">|</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Ctrl+Click</kbd> multi-select</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Ctrl+Click</kbd> {t('artistOverlay.keyHints.ctrlClick')}</span>
             <span className="text-content-muted/50">|</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Shift+Click</kbd> range select</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Shift+Click</kbd> {t('artistOverlay.keyHints.shiftClick')}</span>
           </div>
         )}
 
@@ -521,14 +535,14 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             exit={{ y: 80, opacity: 0 }}
             className="fixed bottom-0 left-0 right-0 z-[55] bg-surface-secondary border-t border-edge-primary px-6 py-4 flex items-center justify-between shadow-2xl"
           >
-            <span className="text-sm text-content-secondary">{selectedIds.size} selected</span>
+            <span className="text-sm text-content-secondary">{t('artistOverlay.batch.selected', { count: selectedIds.size })}</span>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleBatchDownload}
                 className="px-4 py-2 rounded-xl bg-surface-tertiary hover:bg-edge-secondary text-sm text-content-secondary hover:text-content-primary transition-all flex items-center gap-2 font-medium border border-transparent hover:border-edge-primary"
               >
                 <Download className="w-4 h-4" />
-                Download
+                {t('artistOverlay.batch.download')}
               </button>
               <button
                 onClick={handleBatchDelete}
@@ -536,14 +550,14 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
                 className="px-4 py-2 rounded-xl bg-danger hover:bg-danger-hover disabled:opacity-50 text-sm text-white shadow-lg shadow-danger/20 hover:shadow-danger/30 transition-all hover:scale-[1.02] flex items-center gap-2 font-medium"
               >
                 <Trash2 className="w-4 h-4" />
-                {batchDeleting ? 'Deleting...' : 'Delete'}
+                {batchDeleting ? t('artistOverlay.batch.deleting') : t('artistOverlay.batch.delete')}
               </button>
               <button
                 onClick={() => { setSelectedIds(new Set()); setLastClickedId(null); }}
                 className="px-3 py-2 rounded-lg text-sm text-content-muted hover:text-content-secondary transition-colors flex items-center gap-1.5"
               >
                 <X className="w-4 h-4" />
-                Clear
+                {t('artistOverlay.batch.clear')}
               </button>
             </div>
           </motion.div>
@@ -570,9 +584,10 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
       {/* Confirm: set as cover */}
       {coverTarget && (
         <ConfirmModal
-          title="Set as Cover"
-          message={`Use "${coverTarget.original_filename}" as the cover for ${artist.name}?`}
-          confirmText="Set Cover"
+          title={t('artistOverlay.setCover.title')}
+          message={t('artistOverlay.setCover.message', { filename: coverTarget.original_filename, artistName: artist.name })}
+          confirmText={t('artistOverlay.setCover.confirm')}
+          cancelText={t('artistOverlay.setCover.cancel')}
           onConfirm={handleSetCoverConfirm}
           onCancel={() => setCoverTarget(null)}
         />
@@ -581,9 +596,10 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
       {/* Confirm: delete illustration */}
       {deleteTarget && (
         <ConfirmModal
-          title="Delete Illustration"
-          message={`Are you sure you want to delete "${deleteTarget.original_filename}"?`}
-          confirmText="Delete"
+          title={t('artistOverlay.deleteIllustration.title')}
+          message={t('artistOverlay.deleteIllustration.message', { filename: deleteTarget.original_filename })}
+          confirmText={t('artistOverlay.deleteIllustration.confirm')}
+          cancelText={t('artistOverlay.deleteIllustration.cancel')}
           danger
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}

@@ -1,28 +1,30 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Trash2, Info } from 'lucide-react';
 import { getIllustrationMetadata, updateIllustration } from '../api';
 import TagPromptSuggest from './TagPromptSuggest';
-
-const META_KEYS = [
-  'Model',
-  'Seed',
-  'Positive Prompt',
-  'Negative Prompt',
-  'Sampler',
-  'Scheduler',
-  'Steps',
-  'CFG Scale',
-  'LoRAs',
-];
-
-const FILEINFO_KEYS = [
-  { key: 'resolution', label: 'Resolution' },
-  { key: 'size', label: 'File Size' },
-  { key: 'date', label: 'Date Created' },
-];
+import { useLocale } from '../contexts/LocaleContext';
 
 export default function Lightbox({ illustrations, initialIndex, onClose, onDelete, onSetCover, onUpdate }) {
+  const { t } = useLocale();
+
+  const META_KEYS = useMemo(() => [
+    { key: 'Model', label: t('lightbox.meta.model') },
+    { key: 'Seed', label: t('lightbox.meta.seed') },
+    { key: 'Positive Prompt', label: t('lightbox.meta.positivePrompt') },
+    { key: 'Negative Prompt', label: t('lightbox.meta.negativePrompt') },
+    { key: 'Sampler', label: t('lightbox.meta.sampler') },
+    { key: 'Scheduler', label: t('lightbox.meta.scheduler') },
+    { key: 'Steps', label: t('lightbox.meta.steps') },
+    { key: 'CFG Scale', label: t('lightbox.meta.cfgScale') },
+    { key: 'LoRAs', label: t('lightbox.meta.loras') },
+  ], [t]);
+
+  const FILEINFO_KEYS = useMemo(() => [
+    { key: 'resolution', label: t('lightbox.fileInfo.resolution') },
+    { key: 'size', label: t('lightbox.fileInfo.fileSize') },
+    { key: 'date', label: t('lightbox.fileInfo.dateCreated') },
+  ], [t]);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showDetails, setShowDetails] = useState(false);
   const [metadata, setMetadata] = useState(null);
@@ -192,7 +194,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                 className="px-3.5 py-2 rounded-xl text-xs font-medium bg-accent/85 hover:bg-accent text-white shadow-lg shadow-accent/25 transition-all hover:scale-105 inline-flex items-center gap-1.5"
               >
                 <Star className="w-3.5 h-3.5" />
-                Set Cover
+                {t('lightbox.setCover')}
               </button>
             )}
             {onDelete && (
@@ -201,7 +203,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                 className="px-3.5 py-2 rounded-xl text-xs font-medium bg-danger/85 hover:bg-danger text-white shadow-lg shadow-danger/25 transition-all hover:scale-105 inline-flex items-center gap-1.5"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                Delete
+                {t('lightbox.delete')}
               </button>
             )}
 
@@ -214,7 +216,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
               }`}
             >
               <Info className="w-4 h-4" />
-              Details
+              {t('lightbox.details')}
             </button>
           </div>
         </motion.div>
@@ -273,17 +275,17 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
               className="shrink-0 border-l border-white/10 bg-overlay/80 backdrop-blur overflow-y-auto"
             >
               <div className="p-6 w-[360px]">
-                <h3 className="text-sm font-semibold text-gray-300 mb-4">Details</h3>
+                <h3 className="text-sm font-semibold text-gray-300 mb-4">{t('lightbox.panel.heading')}</h3>
 
                 <div className="space-y-3">
                   {/* Artist (always visible) */}
                   <div className="pb-3 border-b border-white/10">
-                    <span className="text-xs text-gray-500">Artist</span>
+                    <span className="text-xs text-gray-500">{t('lightbox.panel.artist')}</span>
                     <p className="text-sm text-gray-200">{currentIllustration.artist_name}</p>
                   </div>
 
                   {loadingMeta ? (
-                    <p className="text-sm text-gray-500">Loading...</p>
+                    <p className="text-sm text-gray-500">{t('lightbox.panel.loading')}</p>
                   ) : metaError ? (
                     <p className="text-sm text-danger">{metaError}</p>
                   ) : metadata ? (
@@ -298,25 +300,25 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                       )}
 
                       {/* Generation params */}
-                      {META_KEYS.map((key) => {
+                      {META_KEYS.map(({ key, label }) => {
                         const value = metadata[key];
                         if (!value || value === 'N/A') return null;
-                        return <InfoRow key={key} label={key} value={value} />;
+                        return <InfoRow key={key} label={label} value={value} />;
                       })}
                     </>
                   ) : (
-                    <p className="text-sm text-gray-500">No metadata available</p>
+                    <p className="text-sm text-gray-500">{t('lightbox.panel.noMetadata')}</p>
                   )}
 
                   {/* Tags */}
                   <div className="pt-3 border-t border-white/10">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Tags</span>
+                      <span className="text-xs text-gray-500">{t('lightbox.panel.tags')}</span>
                       {!editingTags && (
                         <button
                           onClick={enterEditMode}
                           className="p-1 rounded hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors"
-                          title="Edit tags"
+                          title={t('lightbox.panel.editTags')}
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -350,27 +352,27 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                           value={newTagInput}
                           onChange={setNewTagInput}
                           onEnter={() => addDraftTag(newTagInput)}
-                          placeholder="Add tag..."
+                          placeholder={t('lightbox.panel.addTag')}
                           className="w-full"
                           inputClassName="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-accent/50 transition-colors"
                         />
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-[10px] text-gray-600">
-                            Press <kbd className="px-1 rounded bg-white/5">Enter</kbd> to add
+                            {t('lightbox.panel.pressEnter')}
                           </span>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={cancelEdit}
                               className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-300 hover:bg-white/5 transition-all"
                             >
-                              Cancel
+                              {t('lightbox.panel.cancel')}
                             </button>
                             <button
                               onClick={saveTags}
                               disabled={savingTags}
                               className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent hover:bg-accent-hover disabled:opacity-50 text-white shadow-lg shadow-accent/25 transition-all hover:scale-105"
                             >
-                              {savingTags ? 'Saving...' : 'Save'}
+                              {savingTags ? t('lightbox.panel.saving') : t('lightbox.panel.save')}
                             </button>
                           </div>
                         </div>
@@ -389,14 +391,14 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                           >
                             {tagsExpanded ? (
                               <>
-                                Collapse
+                                {t('lightbox.panel.collapse')}
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                                 </svg>
                               </>
                             ) : (
                               <>
-                                +{allTags.length - 3} more
+                                {t('lightbox.panel.expand', { n: allTags.length - 3 })}
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
@@ -406,7 +408,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                         )}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-600 mt-1">No tags</p>
+                      <p className="text-xs text-gray-600 mt-1">{t('lightbox.panel.noTags')}</p>
                     )}
                   </div>
                 </div>
@@ -420,17 +422,17 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
           <span className="flex items-center gap-1">
             <kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">&#8592;</kbd>
             <kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">&#8594;</kbd>
-            {' '}Navigate
+            {' '}{t('lightbox.keyHints.navigate')}
           </span>
           <span className="text-gray-700">|</span>
           <span>
             <kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">Esc</kbd>
-            {' '}Close
+            {' '}{t('lightbox.keyHints.close')}
           </span>
           <span className="text-gray-700">|</span>
           <span>
             <kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">Ctrl</kbd>+<kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">D</kbd>
-            {' '}Details
+            {' '}{t('lightbox.keyHints.details')}
           </span>
         </div>
       </div>
