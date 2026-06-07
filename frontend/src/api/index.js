@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000';
 
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
