@@ -281,20 +281,20 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex flex-col bg-gray-950">
+      <div className="fixed inset-0 z-50 flex flex-col bg-surface-primary">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-edge-primary shrink-0">
           <div className="flex items-center gap-4">
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-gray-200 transition-colors"
+              className="p-2 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-secondary transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h2 className="text-lg font-semibold text-gray-100">{artist.name}</h2>
-            <span className="text-sm text-gray-500">{illustrations.length} illustrations</span>
+            <h2 className="text-lg font-semibold text-content-primary">{artist.name}</h2>
+            <span className="text-sm text-content-muted">{illustrations.length} illustrations</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -304,10 +304,10 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-purple-500/50 appearance-none cursor-pointer"
+                  className="bg-surface-tertiary border border-edge-secondary rounded-lg px-3 py-1.5 text-xs text-content-secondary focus:outline-none focus:border-accent/50 appearance-none cursor-pointer"
                 >
                   {SORT_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-gray-900 text-gray-200">
+                    <option key={opt.value} value={opt.value} className="bg-surface-secondary text-content-primary">
                       {opt.label}
                     </option>
                   ))}
@@ -315,7 +315,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
                 {sortBy && (
                   <button
                     onClick={() => setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))}
-                    className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-gray-200 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-secondary transition-colors"
                     title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
                   >
                     {sortOrder === 'asc' ? (
@@ -338,10 +338,10 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
                 <select
                   value={groupBy}
                   onChange={(e) => { setGroupBy(e.target.value); setCollapsedGroups(new Set()); }}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-purple-500/50 appearance-none cursor-pointer"
+                  className="bg-surface-tertiary border border-edge-secondary rounded-lg px-3 py-1.5 text-xs text-content-secondary focus:outline-none focus:border-accent/50 appearance-none cursor-pointer"
                 >
                   {GROUP_BY_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-gray-900 text-gray-200">
+                    <option key={opt.value} value={opt.value} className="bg-surface-secondary text-content-primary">
                       {opt.label}
                     </option>
                   ))}
@@ -349,7 +349,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
                 {groupBy !== 'none' && (
                   <button
                     onClick={() => setShowGroupConfig(true)}
-                    className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-gray-200 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-secondary transition-colors"
                     title={`Configure ${groupBy === 'tag' ? 'Tag' : 'Prompt'} Groups`}
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,7 +364,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-50 text-sm font-medium text-white transition-colors"
             >
               {uploading ? 'Uploading...' : 'Upload'}
             </button>
@@ -382,16 +382,16 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-900/30 border border-red-800 text-red-400 text-sm">
+            <div className="mb-4 p-3 rounded-lg bg-danger/30 border border-danger text-danger text-sm">
               {error}
-              <button onClick={() => setError('')} className="ml-2 underline hover:text-red-300">Dismiss</button>
+              <button onClick={() => setError('')} className="ml-2 underline hover:opacity-80">Dismiss</button>
             </div>
           )}
 
           {loading ? (
-            <div className="flex items-center justify-center h-64 text-gray-500 text-sm">Loading...</div>
+            <div className="flex items-center justify-center h-64 text-content-muted text-sm">Loading...</div>
           ) : illustrations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-600">
+            <div className="flex flex-col items-center justify-center h-64 text-content-muted">
               <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
@@ -428,12 +428,12 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
 
         {/* Key hints */}
         {selectedIds.size === 0 && illustrations.length > 0 && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[55] px-4 py-2 rounded-lg bg-black/50 backdrop-blur text-xs text-gray-500 flex items-center gap-3 select-none">
-            <span><kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">Click</kbd> to view</span>
-            <span className="text-gray-700">|</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">Ctrl+Click</kbd> multi-select</span>
-            <span className="text-gray-700">|</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">Shift+Click</kbd> range select</span>
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[55] px-4 py-2 rounded-lg bg-overlay/50 backdrop-blur text-xs text-content-muted flex items-center gap-3 select-none">
+            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Click</kbd> to view</span>
+            <span className="text-content-muted/50">|</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Ctrl+Click</kbd> multi-select</span>
+            <span className="text-content-muted/50">|</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-edge-subtle/10 text-content-tertiary text-[10px] font-mono">Shift+Click</kbd> range select</span>
           </div>
         )}
 
@@ -443,13 +443,13 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-[55] bg-gray-900 border-t border-gray-800 px-6 py-4 flex items-center justify-between shadow-2xl"
+            className="fixed bottom-0 left-0 right-0 z-[55] bg-surface-secondary border-t border-edge-primary px-6 py-4 flex items-center justify-between shadow-2xl"
           >
-            <span className="text-sm text-gray-300">{selectedIds.size} selected</span>
+            <span className="text-sm text-content-secondary">{selectedIds.size} selected</span>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleBatchDownload}
-                className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm text-gray-200 transition-colors flex items-center gap-2"
+                className="px-4 py-2 rounded-lg bg-surface-tertiary hover:bg-edge-secondary text-sm text-content-secondary transition-colors flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -459,7 +459,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
               <button
                 onClick={handleBatchDelete}
                 disabled={batchDeleting}
-                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-sm text-white transition-colors flex items-center gap-2"
+                className="px-4 py-2 rounded-lg bg-danger hover:bg-danger-hover disabled:opacity-50 text-sm text-white transition-colors flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -468,7 +468,7 @@ export default function ArtistOverlay({ artist, onClose, onArtistUpdated }) {
               </button>
               <button
                 onClick={() => { setSelectedIds(new Set()); setLastClickedId(null); }}
-                className="px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-300 transition-colors"
+                className="px-3 py-2 rounded-lg text-sm text-content-muted hover:text-content-secondary transition-colors"
               >
                 Clear
               </button>

@@ -1,3 +1,50 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Light mode (default) ──────────────────────────── */
+:root {
+  --clr-surface-1: 250 249 247;
+  --clr-surface-2: 255 255 255;
+  --clr-surface-3: 243 242 240;
+  --clr-text-1: 45 43 40;
+  --clr-text-2: 85 83 80;
+  --clr-text-3: 107 103 98;
+  --clr-text-muted: 149 145 138;
+  --clr-text-inv: 255 255 255;
+  --clr-edge-1: 224 222 217;
+  --clr-edge-2: 209 207 201;
+  --clr-edge-sub: 0 0 0;
+  --clr-accent: 124 92 224;
+  --clr-accent-hover: 106 79 212;
+  --clr-danger: 239 68 68;
+  --clr-danger-hover: 220 38 38;
+  --clr-success: 34 197 94;
+  --clr-overlay: 0 0 0;
+}
+
+/* ── Dark mode ─────────────────────────────────────── */
+.dark {
+  --clr-surface-1: 26 27 30;
+  --clr-surface-2: 34 35 39;
+  --clr-surface-3: 42 43 47;
+  --clr-text-1: 228 226 223;
+  --clr-text-2: 184 180 174;
+  --clr-text-3: 157 153 147;
+  --clr-text-muted: 107 103 98;
+  --clr-text-inv: 26 27 30;
+  --clr-edge-1: 51 53 56;
+  --clr-edge-2: 42 43 47;
+  --clr-edge-sub: 255 255 255;
+  --clr-accent: 155 135 245;
+  --clr-accent-hover: 176 159 255;
+  --clr-danger: 248 113 113;
+  --clr-danger-hover: 239 68 68;
+  --clr-success: 74 222 128;
+  --clr-overlay: 0 0 0;
+}
+
+/* ── Smooth theme transitions ──────────────────────── */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}

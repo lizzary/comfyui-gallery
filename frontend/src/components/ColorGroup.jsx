@@ -11,7 +11,7 @@ export default function ColorGroup({ group, collapsed, onToggle, children }) {
         className="w-full flex items-center gap-3 px-4 py-3 hover:brightness-110 transition-all text-left select-none"
       >
         <span
-          className="text-xs text-gray-400 transition-transform"
+          className="text-xs text-content-tertiary transition-transform"
           style={{ transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,8 +22,8 @@ export default function ColorGroup({ group, collapsed, onToggle, children }) {
           className="w-3 h-3 rounded-full shrink-0"
           style={{ backgroundColor: group.borderColor }}
         />
-        <span className="text-sm font-medium text-gray-200">{group.name}</span>
-        <span className="text-xs text-gray-500">({group.items.length})</span>
+        <span className="text-sm font-medium text-content-secondary">{group.name}</span>
+        <span className="text-xs text-content-muted">({group.items.length})</span>
       </button>
       {!collapsed && (
         <div className="px-4 pb-4">

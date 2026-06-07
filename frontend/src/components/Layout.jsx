@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 import TagPromptSuggest from './TagPromptSuggest';
 
 export default function Layout({ children, onSearch }) {
   const [query, setQuery] = useState('');
+  const { theme, toggleTheme } = useTheme();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -12,38 +15,47 @@ export default function Layout({ children, onSearch }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-surface-primary text-content-primary">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-gray-800 bg-gray-950/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-edge-primary bg-surface-primary/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <a href="/" className="text-xl font-bold tracking-tight text-white hover:text-purple-400 transition-colors">
+            <a href="/" className="text-xl font-bold tracking-tight text-content-primary hover:text-accent transition-colors">
               Gallery
             </a>
             <nav className="flex items-center gap-4">
-              <Link to="/tags" className="text-sm text-gray-400 hover:text-purple-400 transition-colors">
+              <Link to="/tags" className="text-sm text-content-tertiary hover:text-accent transition-colors">
                 Tags
               </Link>
-              <Link to="/prompts" className="text-sm text-gray-400 hover:text-purple-400 transition-colors">
+              <Link to="/prompts" className="text-sm text-content-tertiary hover:text-accent transition-colors">
                 Prompts
               </Link>
             </nav>
           </div>
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <TagPromptSuggest
-              type="tag"
-              value={query}
-              onChange={setQuery}
-              placeholder="Search tags..."
-              inputClassName="w-64 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
-            />
+          <div className="flex items-center gap-3">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+              <TagPromptSuggest
+                type="tag"
+                value={query}
+                onChange={setQuery}
+                placeholder="Search tags..."
+                inputClassName="w-64 px-4 py-2 rounded-lg bg-surface-tertiary border border-edge-secondary text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-sm font-medium text-white transition-colors"
+              >
+                Search
+              </button>
+            </form>
             <button
-              type="submit"
-              className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-sm font-medium transition-colors"
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-surface-tertiary text-content-tertiary hover:text-content-primary transition-colors"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              Search
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-          </form>
+          </div>
         </div>
       </header>
       <main>{children}</main>

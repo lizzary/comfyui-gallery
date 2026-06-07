@@ -130,7 +130,7 @@ export default function TagPromptSuggest({
       {showDropdown && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
+          className="absolute top-full left-0 right-0 mt-1 bg-surface-tertiary border border-edge-secondary rounded-lg shadow-xl z-50 overflow-hidden"
         >
           {suggestions.map((item, idx) => (
             <button
@@ -138,12 +138,12 @@ export default function TagPromptSuggest({
               onClick={() => selectSuggestion(item)}
               className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors ${
                 idx === activeIndex
-                  ? 'bg-purple-600/30'
-                  : 'hover:bg-gray-700'
+                  ? 'bg-accent/30'
+                  : 'hover:bg-edge-secondary'
               }`}
             >
-              <span className={idx === activeIndex ? 'text-purple-300' : 'text-gray-300'}>{item}</span>
-              <span className="text-xs text-gray-600 shrink-0 ml-3">{type}</span>
+              <span className={idx === activeIndex ? 'text-accent' : 'text-content-secondary'}>{item}</span>
+              <span className="text-xs text-content-muted shrink-0 ml-3">{type}</span>
             </button>
           ))}
         </div>

@@ -156,7 +156,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[70] flex flex-col bg-black/95">
+      <div className="fixed inset-0 z-[70] flex flex-col bg-overlay/95">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -188,7 +188,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
             {onSetCover && (
               <button
                 onClick={() => onSetCover(currentIllustration)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-600/70 hover:bg-purple-500 text-white transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent/70 hover:bg-accent text-white transition-colors"
               >
                 Set Cover
               </button>
@@ -196,7 +196,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
             {onDelete && (
               <button
                 onClick={() => onDelete(currentIllustration)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600/70 hover:bg-red-500 text-white transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-danger/70 hover:bg-danger text-white transition-colors"
               >
                 Delete
               </button>
@@ -206,7 +206,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
               onClick={() => setShowDetails(!showDetails)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showDetails
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-accent text-white'
                   : 'bg-white/10 hover:bg-white/20 text-gray-300'
               }`}
             >
@@ -241,7 +241,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
               <>
                 <button
                   onClick={() => navigate(-1)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white/60 hover:text-white transition-all"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-all"
                 >
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -249,7 +249,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                 </button>
                 <button
                   onClick={() => navigate(1)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white/60 hover:text-white transition-all"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-all"
                 >
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -266,7 +266,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
               animate={{ width: 360, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="shrink-0 border-l border-white/10 bg-gray-950/80 backdrop-blur overflow-y-auto"
+              className="shrink-0 border-l border-white/10 bg-overlay/80 backdrop-blur overflow-y-auto"
             >
               <div className="p-6 w-[360px]">
                 <h3 className="text-sm font-semibold text-gray-300 mb-4">Details</h3>
@@ -281,7 +281,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                   {loadingMeta ? (
                     <p className="text-sm text-gray-500">Loading...</p>
                   ) : metaError ? (
-                    <p className="text-sm text-red-400">{metaError}</p>
+                    <p className="text-sm text-danger">{metaError}</p>
                   ) : metadata ? (
                     <>
                       {/* File info */}
@@ -327,12 +327,12 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                           {draftTags.map((tag) => (
                             <span
                               key={tag}
-                              className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs bg-purple-600/30 text-purple-300 border border-purple-500/30"
+                              className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs bg-accent/30 text-accent border border-accent/30"
                             >
                               {tag}
                               <button
                                 onClick={() => removeDraftTag(tag)}
-                                className="text-purple-400 hover:text-purple-200 transition-colors"
+                                className="text-accent hover:text-accent-hover transition-colors"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -348,7 +348,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                           onEnter={() => addDraftTag(newTagInput)}
                           placeholder="Add tag..."
                           className="w-full"
-                          inputClassName="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-purple-500/50 transition-colors"
+                          inputClassName="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-accent/50 transition-colors"
                         />
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-[10px] text-gray-600">
@@ -364,7 +364,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                             <button
                               onClick={saveTags}
                               disabled={savingTags}
-                              className="px-3 py-1 rounded-lg text-xs font-medium bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white transition-colors"
+                              className="px-3 py-1 rounded-lg text-xs font-medium bg-accent hover:bg-accent-hover disabled:opacity-50 text-white transition-colors"
                             >
                               {savingTags ? 'Saving...' : 'Save'}
                             </button>
@@ -374,14 +374,14 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
                     ) : allTags.length > 0 ? (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {(tagsExpanded ? allTags : allTags.slice(0, 3)).map((tag, i) => (
-                          <span key={i} className="px-1.5 py-0.5 rounded text-xs bg-gray-800 text-gray-300">
+                          <span key={i} className="px-1.5 py-0.5 rounded text-xs bg-white/10 text-gray-300">
                             {tag}
                           </span>
                         ))}
                         {allTags.length > 3 && (
                           <button
                             onClick={() => setTagsExpanded((prev) => !prev)}
-                            className="px-1.5 py-0.5 rounded text-xs bg-gray-800 text-purple-400 hover:text-purple-300 hover:bg-gray-700 transition-colors inline-flex items-center gap-0.5"
+                            className="px-1.5 py-0.5 rounded text-xs bg-white/10 text-accent hover:text-accent-hover hover:bg-white/20 transition-colors inline-flex items-center gap-0.5"
                           >
                             {tagsExpanded ? (
                               <>
@@ -412,7 +412,7 @@ export default function Lightbox({ illustrations, initialIndex, onClose, onDelet
         </div>
 
         {/* Key hints */}
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[80] px-4 py-2 rounded-lg bg-black/50 backdrop-blur text-xs text-gray-500 flex items-center gap-3 select-none">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[80] px-4 py-2 rounded-lg bg-overlay/50 backdrop-blur text-xs text-gray-500 flex items-center gap-3 select-none">
           <span className="flex items-center gap-1">
             <kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">&#8592;</kbd>
             <kbd className="px-1 py-0.5 rounded bg-white/10 text-gray-400 text-[10px] font-mono">&#8594;</kbd>

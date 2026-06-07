@@ -32,8 +32,8 @@ export function ToastProvider({ children }) {
               transition={{ duration: 0.2 }}
               className={`pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-sm flex items-center gap-3 max-w-sm ${
                 toast.type === 'success'
-                  ? 'bg-green-900/90 border border-green-700 text-green-200'
-                  : 'bg-red-900/90 border border-red-700 text-red-200'
+                  ? 'bg-success/90 border border-success text-white'
+                  : 'bg-danger/90 border border-danger text-white'
               }`}
             >
               <span className="flex-1">{toast.message}</span>

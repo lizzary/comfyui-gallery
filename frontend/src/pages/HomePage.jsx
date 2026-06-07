@@ -59,21 +59,21 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Error banner */}
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-900/20 border border-red-800/50 text-red-400 text-sm flex items-center justify-between">
+          <div className="mb-6 p-4 rounded-xl bg-danger/20 border border-danger/50 text-danger text-sm flex items-center justify-between">
             <span>{error}</span>
-            <button onClick={() => setError('')} className="text-red-300 hover:text-red-200 underline text-xs">Dismiss</button>
+            <button onClick={() => setError('')} className="text-danger hover:underline text-xs opacity-80 hover:opacity-100">Dismiss</button>
           </div>
         )}
 
         {/* Page header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-100">Artists</h1>
-            <p className="text-sm text-gray-500 mt-1">{artists.length} artists</p>
+            <h1 className="text-2xl font-bold text-content-primary">Artists</h1>
+            <p className="text-sm text-content-muted mt-1">{artists.length} artists</p>
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-sm font-medium shadow-lg shadow-purple-600/20 transition-all"
+            className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-sm font-medium text-white shadow-lg shadow-accent/20 transition-all"
           >
             + New Artist
           </button>
@@ -81,9 +81,9 @@ export default function HomePage() {
 
         {/* Artist grid */}
         {loading ? (
-          <div className="flex items-center justify-center h-64 text-gray-500 text-sm">Loading...</div>
+          <div className="flex items-center justify-center h-64 text-content-muted text-sm">Loading...</div>
         ) : artists.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-600">
+          <div className="flex flex-col items-center justify-center h-64 text-content-muted">
             <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />

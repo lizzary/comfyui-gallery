@@ -69,24 +69,24 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-overlay/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg mx-4 shadow-2xl overflow-hidden"
+        className="bg-surface-secondary border border-edge-primary rounded-2xl w-full max-w-lg mx-4 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-100">
+        <div className="px-6 py-4 border-b border-edge-primary flex items-center justify-between">
+          <h3 className="text-base font-semibold text-content-primary">
             Configure {label} Groups
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-colors"
+            className="p-1 rounded-lg hover:bg-surface-tertiary text-content-muted hover:text-content-secondary transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -96,10 +96,10 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
 
         {/* Body */}
         <div className="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-4">
-          <p className="text-xs text-gray-500 leading-relaxed">
+          <p className="text-xs text-content-muted leading-relaxed">
             Each group defines a set of keywords. An illustration is placed in the{' '}
-            <strong className="text-gray-400">first</strong> group where{' '}
-            <strong className="text-gray-400">all</strong> keywords match.
+            <strong className="text-content-tertiary">first</strong> group where{' '}
+            <strong className="text-content-tertiary">all</strong> keywords match.
             {type === 'prompt' && (
               <> Matching searches both the Positive and Negative prompt text.</>
             )}
@@ -107,7 +107,7 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
           </p>
 
           {editingPairs.length === 0 && (
-            <div className="text-center py-6 text-gray-600 text-sm">
+            <div className="text-center py-6 text-content-muted text-sm">
               No groups defined yet. Click &ldquo;Add Group&rdquo; below.
             </div>
           )}
@@ -127,13 +127,13 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
                       className="w-3.5 h-3.5 rounded-full shrink-0"
                       style={{ backgroundColor: color.border }}
                     />
-                    <span className="text-sm font-medium text-gray-200">
+                    <span className="text-sm font-medium text-content-secondary">
                       Group {pi + 1}
                     </span>
                   </div>
                   <button
                     onClick={() => handleRemovePair(pair.id)}
-                    className="p-1 rounded-lg hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors"
+                    className="p-1 rounded-lg hover:bg-edge-subtle/10 text-content-muted hover:text-danger transition-colors"
                     title="Remove group"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,12 +151,12 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
                         onChange={(val) => handleKeywordChange(pair.id, ki, val)}
                         placeholder={type === 'tag' ? 'e.g. girl' : 'e.g. masterpiece'}
                         className="flex-1"
-                        inputClassName="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-white/30 transition-colors"
+                        inputClassName="w-full bg-overlay/30 border border-edge-subtle/10 rounded-lg px-3 py-1.5 text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-edge-subtle/30 transition-colors"
                       />
                       {pair.keywords.length > 1 && (
                         <button
                           onClick={() => handleRemoveKeyword(pair.id, ki)}
-                          className="p-1.5 rounded-lg hover:bg-white/10 text-gray-600 hover:text-gray-400 transition-colors shrink-0"
+                          className="p-1.5 rounded-lg hover:bg-edge-subtle/10 text-content-muted hover:text-content-tertiary transition-colors shrink-0"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -167,7 +167,7 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
                   ))}
                   <button
                     onClick={() => handleAddKeyword(pair.id)}
-                    className="text-xs text-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1 mt-1"
+                    className="text-xs text-content-muted hover:text-content-tertiary transition-colors flex items-center gap-1 mt-1"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -181,7 +181,7 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
 
           <button
             onClick={handleAddPair}
-            className="w-full py-3 rounded-xl border-2 border-dashed border-gray-800 hover:border-gray-600 text-gray-600 hover:text-gray-400 text-sm transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl border-2 border-dashed border-edge-primary hover:border-edge-secondary text-content-muted hover:text-content-tertiary text-sm transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -198,22 +198,22 @@ export default function GroupConfigModal({ type, pairs, palette, otherColor, onS
               className="w-3 h-3 rounded-full shrink-0"
               style={{ backgroundColor: otherColor.border }}
             />
-            <span className="text-sm text-gray-400">Other</span>
-            <span className="text-xs text-gray-600">— unmatched illustrations</span>
+            <span className="text-sm text-content-tertiary">Other</span>
+            <span className="text-xs text-content-muted">— unmatched illustrations</span>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-edge-primary flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-300 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm text-content-muted hover:text-content-secondary transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-sm font-medium transition-colors"
+            className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-sm font-medium text-white transition-colors"
           >
             Save
           </button>
