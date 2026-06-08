@@ -22,6 +22,7 @@ export default function TagPromptSuggest({
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
   const suppressRef = useRef(true);
+  const skipFocusRef = useRef(false);
   const { t } = useLocale();
 
   // Fetch full list once, using cache
@@ -126,6 +127,7 @@ export default function TagPromptSuggest({
       }
       setShowDropdown(false);
       setActiveIndex(-1);
+      skipFocusRef.current = true;
       inputRef.current?.focus();
     },
     [onChange, onSelect, type]
@@ -188,36 +190,60 @@ export default function TagPromptSuggest({
           onChange(e.target.value);
         }}
         onFocus={() => {
-          if (!suppressRef.current && value && suggestions.length > 0) setShowDropdown(true);
+          if (skipFocusRef.current) {
+            skipFocusRef.current = false;
+            return;
+          }
+          suppressRef.current = false;
+          if (value && suggestions.length > 0) setShowDropdown(true);
         }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         autoComplete="off"
         className={inputClassName}
       />
-      {showDropdown && (
+      {showDropdown && (() => {
+        const lower = value.toLowerCase();
+        const isExact = (item) => {
+          const text = type === 'mixed' ? item.text : item;
+          return text.toLowerCase() === lower;
+        };
+        return (
         <div
           ref={dropdownRef}
           className="absolute top-full left-0 right-0 mt-1 bg-surface-tertiary border border-edge-secondary rounded-lg shadow-xl z-50 overflow-hidden"
         >
-          {suggestions.map((item, idx) => (
+          {suggestions.map((item, idx) => {
+            const exact = isExact(item);
+            return (
             <button
               key={resolveItemKey(item)}
               onClick={() => selectSuggestion(item)}
               className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors ${
                 idx === activeIndex
                   ? 'bg-accent/30'
-                  : 'hover:bg-edge-secondary'
+                  : exact
+                    ? 'bg-accent/10'
+                    : 'hover:bg-edge-secondary'
               }`}
             >
-              <span className={idx === activeIndex ? 'text-accent' : 'text-content-secondary'}>
-                {resolveItemText(item)}
+              <span className="flex items-center gap-2 min-w-0">
+                {exact && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
+                )}
+                <span className={`truncate ${
+                  idx === activeIndex ? 'text-accent' : exact ? 'text-accent/80' : 'text-content-secondary'
+                }`}>
+                  {resolveItemText(item)}
+                </span>
               </span>
               <span className="text-xs text-content-muted shrink-0 ml-3">{typeLabel(item)}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
