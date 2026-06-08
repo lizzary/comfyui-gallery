@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale } from '../contexts/LocaleContext';
 
-export default function CreateGroupModal({ onClose, onSubmit }) {
-  const [name, setName] = useState('');
+export default function CreateGroupModal({ onClose, onSubmit, initialName = '', headingKey = 'createGroup.heading', submitKey = 'createGroup.create', submitLoadingKey = 'createGroup.creating' }) {
+  const [name, setName] = useState(initialName);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { t } = useLocale();
@@ -12,6 +12,7 @@ export default function CreateGroupModal({ onClose, onSubmit }) {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) return;
+    if (trimmed === initialName.trim()) { onClose(); return; }
     setLoading(true);
     setError('');
     try {
@@ -41,7 +42,7 @@ export default function CreateGroupModal({ onClose, onSubmit }) {
           transition={{ type: 'spring', duration: 0.3 }}
           className="relative bg-surface-secondary border border-edge-primary rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl"
         >
-        <h2 className="text-lg font-semibold text-content-primary mb-4">{t('createGroup.heading')}</h2>
+        <h2 className="text-lg font-semibold text-content-primary mb-4">{t(headingKey)}</h2>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -65,7 +66,7 @@ export default function CreateGroupModal({ onClose, onSubmit }) {
               disabled={loading || !name.trim()}
               className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-white shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all hover:scale-[1.03]"
             >
-              {loading ? t('createGroup.creating') : t('createGroup.create')}
+              {loading ? t(submitLoadingKey) : t(submitKey)}
             </button>
           </div>
         </form>

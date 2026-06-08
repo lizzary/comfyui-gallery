@@ -27,6 +27,7 @@ const translations = {
     // GroupCard
     'groupCard.noCover': 'No Cover',
     'groupCard.illustrationCount': '{count} illustrations',
+    'groupCard.renameTitle': 'Rename group',
     'groupCard.deleteTitle': 'Delete group',
 
     // CreateGroupModal
@@ -36,6 +37,13 @@ const translations = {
     'createGroup.creating': 'Creating...',
     'createGroup.create': 'Create',
     'createGroup.error': 'Create failed',
+
+    // RenameGroup
+    'renameGroup.heading': 'Rename Group',
+    'renameGroup.placeholder': 'Enter new name',
+    'renameGroup.renaming': 'Renaming...',
+    'renameGroup.rename': 'Rename',
+    'renameGroup.error': 'Rename failed',
 
     // ConfirmModal
     'confirmModal.confirm': 'Confirm',
@@ -289,6 +297,7 @@ const translations = {
     // GroupCard
     'groupCard.noCover': '无封面',
     'groupCard.illustrationCount': '{count} 张作品',
+    'groupCard.renameTitle': '重命名分组',
     'groupCard.deleteTitle': '删除分组',
 
     // CreateGroupModal
@@ -298,6 +307,13 @@ const translations = {
     'createGroup.creating': '创建中...',
     'createGroup.create': '创建',
     'createGroup.error': '创建失败',
+
+    // RenameGroup
+    'renameGroup.heading': '重命名分组',
+    'renameGroup.placeholder': '输入新名称',
+    'renameGroup.renaming': '重命名中...',
+    'renameGroup.rename': '重命名',
+    'renameGroup.error': '重命名失败',
 
     // ConfirmModal
     'confirmModal.confirm': '确认',

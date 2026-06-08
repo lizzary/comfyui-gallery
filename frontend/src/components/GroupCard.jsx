@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
 import { useLocale } from '../contexts/LocaleContext';
 
-export default function GroupCard({ group, onClick, onDelete, quality = 'low' }) {
+export default function GroupCard({ group, onClick, onDelete, onRename, quality = 'low' }) {
   const { t } = useLocale();
   return (
     <motion.div
@@ -39,17 +39,29 @@ export default function GroupCard({ group, onClick, onDelete, quality = 'low' })
         <p className="text-xs text-content-muted mt-0.5">{t('groupCard.illustrationCount', { count: group.illustration_count })}</p>
       </div>
 
-      {/* Delete button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(group);
-        }}
-        className="absolute top-2 right-2 p-1.5 rounded-lg bg-overlay/60 text-content-tertiary hover:text-danger hover:bg-overlay/80 opacity-0 group-hover:opacity-100 transition-all"
-        title={t('groupCard.deleteTitle')}
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
+      {/* Action buttons */}
+      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRename(group);
+          }}
+          className="p-1.5 rounded-lg bg-overlay/60 text-content-tertiary hover:text-accent hover:bg-overlay/80 transition-all"
+          title={t('groupCard.renameTitle')}
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(group);
+          }}
+          className="p-1.5 rounded-lg bg-overlay/60 text-content-tertiary hover:text-danger hover:bg-overlay/80 transition-all"
+          title={t('groupCard.deleteTitle')}
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
     </motion.div>
   );
 }

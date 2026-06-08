@@ -7,7 +7,7 @@ import CreateGroupModal from '../components/CreateGroupModal';
 import ConfirmModal from '../components/ConfirmModal';
 import GroupOverlay from '../components/GroupOverlay';
 import SearchOverlay from '../components/SearchOverlay';
-import { listGroups, createGroup, deleteGroup } from '../api';
+import { listGroups, createGroup, updateGroup, deleteGroup } from '../api';
 import useQuality from '../hooks/useQuality';
 import { useLocale } from '../contexts/LocaleContext';
 
@@ -19,6 +19,7 @@ export default function HomePage() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [searchQuery, setSearchQuery] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { group }
+  const [renameTarget, setRenameTarget] = useState(null); // group to rename
   const [quality] = useQuality();
   const { t } = useLocale();
 
@@ -40,6 +41,13 @@ export default function HomePage() {
 
   const handleCreate = async (name) => {
     await createGroup(name);
+    await fetchGroups();
+  };
+
+  const handleRename = async (name) => {
+    if (!renameTarget) return;
+    await updateGroup(renameTarget.id, { name });
+    setRenameTarget(null);
     await fetchGroups();
   };
 
@@ -105,6 +113,7 @@ export default function HomePage() {
                   group={group}
                   onClick={setSelectedGroup}
                   onDelete={setDeleteConfirm}
+                  onRename={setRenameTarget}
                   quality={quality}
                 />
               ))}
@@ -118,6 +127,18 @@ export default function HomePage() {
         <CreateGroupModal
           onClose={() => setShowCreate(false)}
           onSubmit={handleCreate}
+        />
+      )}
+
+      {/* Rename modal */}
+      {renameTarget && (
+        <CreateGroupModal
+          initialName={renameTarget.name}
+          headingKey="renameGroup.heading"
+          submitKey="renameGroup.rename"
+          submitLoadingKey="renameGroup.renaming"
+          onClose={() => setRenameTarget(null)}
+          onSubmit={handleRename}
         />
       )}
 
