@@ -1,4 +1,4 @@
-# Gallery
+# ARTIFEX
 
 <div align="center">
 
@@ -7,10 +7,11 @@
 
 </div>
 
-**Gallery** is a self-hosted image management tool designed for AI art enthusiasts and creators. It helps you organize, search, and browse your ComfyUI-generated illustrations with powerful tagging, metadata extraction, and visual grouping features.
+**Artifex** is a self-hosted image management tool designed for art enthusiasts and creators. It helps you organize, search, and browse your ComfyUI-generated illustrations with powerful tagging, metadata extraction, and visual grouping features.
 
 ---
 
+![Global Search](readme/access/main_page.png)
 ## Features
 
 ### Global Tag Search
@@ -18,7 +19,7 @@
 A blazing-fast full-text search engine powered by SQLite FTS5. Type any keyword into the search bar — available from every page — and instantly find every illustration whose tags match. Prefix matching means partial terms work too: type "suns" and you get "sunset", "sunshine", "sunlight".
 
 <!-- Screenshot: placeholder for search bar / search results -->
-<!-- ![Global Search](readme/access/search_overlay.png) -->
+![Global Search](readme/access/search_overlay.png)
 
 ### AI-Powered Auto-Tagging
 
