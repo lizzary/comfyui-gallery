@@ -21,6 +21,7 @@ export default function TagPromptSuggest({
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
+  const suppressRef = useRef(true);
   const { t } = useLocale();
 
   // Fetch full list once, using cache
@@ -83,15 +84,17 @@ export default function TagPromptSuggest({
     let matches;
     if (type === 'mixed') {
       matches = allItems
-        .filter((item) => item.text.toLowerCase().includes(lower) && item.text.toLowerCase() !== lower)
+        .filter((item) => item.text.toLowerCase().includes(lower))
         .slice(0, 8);
     } else {
       matches = allItems
-        .filter((item) => item.toLowerCase().includes(lower) && item.toLowerCase() !== lower)
+        .filter((item) => item.toLowerCase().includes(lower))
         .slice(0, 8);
     }
     setSuggestions(matches);
-    setShowDropdown(matches.length > 0);
+    if (!suppressRef.current) {
+      setShowDropdown(matches.length > 0);
+    }
     setActiveIndex(-1);
   }, [value, allItems, type]);
 
@@ -113,6 +116,7 @@ export default function TagPromptSuggest({
 
   const selectSuggestion = useCallback(
     (item) => {
+      suppressRef.current = true;
       if (type === 'mixed') {
         onChange(item.text);
         const scope = item.types.length === 2 ? 'all' : item.types[0];
@@ -179,9 +183,12 @@ export default function TagPromptSuggest({
         ref={inputRef}
         type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          suppressRef.current = false;
+          onChange(e.target.value);
+        }}
         onFocus={() => {
-          if (value && suggestions.length > 0) setShowDropdown(true);
+          if (!suppressRef.current && value && suggestions.length > 0) setShowDropdown(true);
         }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
