@@ -195,7 +195,7 @@ export default function GroupConfigModal({ type, config, onClose }) {
             {sets.length > 1 && (
               <button
                 onClick={handleDeleteSet}
-                className={`shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+                className={`shrink-0 flex flex-col items-center px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                   deleteConfirm === activeSetId
                     ? 'bg-danger text-white shadow-md shadow-danger/20'
                     : 'text-content-muted hover:text-danger hover:bg-danger/10'
@@ -203,7 +203,7 @@ export default function GroupConfigModal({ type, config, onClose }) {
                 title={t('groupConfig.sets.deleteSet')}
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline ml-1.5">
+                <span className="hidden sm:block">
                   {deleteConfirm === activeSetId
                     ? t('groupConfig.sets.deleteConfirm', { name: editingName || activeSet?.name || '' })
                     : t('groupConfig.sets.deleteSet')}
