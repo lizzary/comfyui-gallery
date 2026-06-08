@@ -28,7 +28,7 @@ Upload images and let the built-in [WD EVA02-Large Tagger v3](https://huggingfac
 Auto-tagging can be toggled on/off globally in Settings — useful when you only want manual tags.
 
 <!-- Screenshot: placeholder for settings page with auto-tag toggle -->
-<!-- ![Auto-Tag Settings](readme/access/settings_auto_tag.png) -->
+![Auto-Tag Settings](readme/access/settings_auto_tag.png)
 
 ### ComfyUI Metadata Extraction
 
