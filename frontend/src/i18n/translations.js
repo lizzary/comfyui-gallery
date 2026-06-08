@@ -1,7 +1,7 @@
 const translations = {
   en: {
     // Layout
-    'layout.brand': 'Gallery',
+    'layout.brand': 'ARTIFEX',
     'layout.nav.tags': 'Tags',
     'layout.nav.prompts': 'Prompts',
     'layout.nav.settings': 'Settings',
@@ -9,6 +9,7 @@ const translations = {
     'layout.search.button': 'Search',
     'layout.theme.switchToLight': 'Switch to light mode',
     'layout.theme.switchToDark': 'Switch to dark mode',
+    'layout.github': 'View on GitHub',
 
     // HomePage
     'home.heading': 'Groups',
@@ -281,6 +282,7 @@ const translations = {
     'layout.search.button': '搜索',
     'layout.theme.switchToLight': '切换到亮色模式',
     'layout.theme.switchToDark': '切换到暗色模式',
+    'layout.github': '在 GitHub 上查看',
 
     // HomePage
     'home.heading': '分组',
