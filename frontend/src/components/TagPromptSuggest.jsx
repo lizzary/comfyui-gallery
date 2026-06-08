@@ -82,16 +82,10 @@ export default function TagPromptSuggest({
       return;
     }
     const lower = value.toLowerCase();
-    let matches;
-    if (type === 'mixed') {
-      matches = allItems
-        .filter((item) => item.text.toLowerCase().includes(lower))
-        .slice(0, 8);
-    } else {
-      matches = allItems
-        .filter((item) => item.toLowerCase().includes(lower))
-        .slice(0, 8);
-    }
+    const getText = (item) => (type === 'mixed' ? item.text : item);
+    const matches = allItems
+      .filter((item) => getText(item).toLowerCase().includes(lower))
+      .slice(0, 8);
     setSuggestions(matches);
     if (!suppressRef.current) {
       setShowDropdown(matches.length > 0);
@@ -170,7 +164,6 @@ export default function TagPromptSuggest({
     }
   };
 
-  const resolveItemKey = (item) => (type === 'mixed' ? item.text : item);
   const resolveItemText = (item) => (type === 'mixed' ? item.text : item);
 
   const typeLabel = (item) => {
@@ -204,10 +197,7 @@ export default function TagPromptSuggest({
       />
       {showDropdown && (() => {
         const lower = value.toLowerCase();
-        const isExact = (item) => {
-          const text = type === 'mixed' ? item.text : item;
-          return text.toLowerCase() === lower;
-        };
+        const isExact = (item) => resolveItemText(item).toLowerCase() === lower;
         return (
         <div
           ref={dropdownRef}
@@ -217,7 +207,7 @@ export default function TagPromptSuggest({
             const exact = isExact(item);
             return (
             <button
-              key={resolveItemKey(item)}
+              key={resolveItemText(item)}
               onClick={() => selectSuggestion(item)}
               className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors ${
                 idx === activeIndex
