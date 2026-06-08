@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from io import BytesIO
 from typing import Optional, AsyncGenerator
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Form
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, UnidentifiedImageError
@@ -16,7 +16,7 @@ from models import (
     IllustrationResponse, IllustrationUpdate,
     SearchResult, IllustrationListResult,
 )
-from utils import extract_metadata, extract_tags, create_thumbnail, get_image_info, set_use_gpu
+from utils import extract_metadata, extract_tags, create_thumbnail, get_image_info, set_use_gpu, is_model_cached, download_model
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
@@ -261,6 +261,7 @@ def list_illustrations(
 def upload_illustrations(
     group_id: int,
     files: list[UploadFile] = File(...),
+    skip_auto_tag: bool = Form(False),
 ):
     conn = get_db()
     group = conn.execute("SELECT id, name FROM groups WHERE id = ?", (group_id,)).fetchone()
@@ -287,7 +288,7 @@ def upload_illustrations(
             raise HTTPException(400, f"Failed to read image: {safe_filename}")
 
         try:
-            if load_settings().get("auto_tag", True):
+            if not skip_auto_tag and load_settings().get("auto_tag", True):
                 tags = extract_tags(image)
             else:
                 tags = ""
@@ -590,6 +591,24 @@ def list_prompts():
                     if trimmed:
                         unique.add(trimmed)
     return sorted(unique)
+
+
+# ── Model ───────────────────────────────────────────────
+
+@app.get("/api/model/status")
+def model_status():
+    """Return whether the tagger model is already cached locally."""
+    return {"cached": is_model_cached()}
+
+
+@app.post("/api/model/download", status_code=200)
+def model_download():
+    """Pre-download the tagger model. Blocking — may take a while on first call."""
+    try:
+        download_model()
+        return {"status": "ok"}
+    except Exception as exc:
+        raise HTTPException(500, f"Model download failed: {exc}")
 
 
 # ── Settings ────────────────────────────────────────────

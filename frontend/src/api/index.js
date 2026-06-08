@@ -47,18 +47,20 @@ export function listIllustrations(groupId, offset = 0, limit = 200) {
   return request(`/api/groups/${groupId}/illustrations?offset=${offset}&limit=${limit}`);
 }
 
-export function uploadIllustrations(groupId, files) {
+export function uploadIllustrations(groupId, files, skipAutoTag = false) {
   const formData = new FormData();
   files.forEach((f) => formData.append('files', f));
+  formData.append('skip_auto_tag', skipAutoTag ? 'true' : 'false');
   return request(
     `/api/groups/${groupId}/illustrations/upload`,
     { method: 'POST', body: formData },
   );
 }
 
-export function uploadSingleIllustration(groupId, file) {
+export function uploadSingleIllustration(groupId, file, skipAutoTag = false) {
   const formData = new FormData();
   formData.append('files', file);
+  formData.append('skip_auto_tag', skipAutoTag ? 'true' : 'false');
   return request(
     `/api/groups/${groupId}/illustrations/upload`,
     { method: 'POST', body: formData },
@@ -100,4 +102,14 @@ export function listPrompts() {
 export function searchIllustrations(query, offset = 0, limit = 100) {
   const q = encodeURIComponent(query);
   return request(`/api/search?q=${q}&offset=${offset}&limit=${limit}`);
+}
+
+// ── Model ───────────────────────────────────────────────
+
+export function checkModelStatus() {
+  return request('/api/model/status');
+}
+
+export function downloadModel() {
+  return request('/api/model/download', { method: 'POST' });
 }

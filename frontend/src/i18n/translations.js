@@ -221,6 +221,17 @@ const translations = {
     'tagPromptSuggest.tagAndPrompt': 'tag & prompt',
     'tagPromptSuggest.filterScope.all': 'All',
 
+    // ModelDownloadModal
+    'modelDownload.title': 'AI Tagging Model Required',
+    'modelDownload.description': 'The AI auto-tagging model (~800 MB) needs to be downloaded before uploading images with auto-tag enabled. You can skip this step — images will still be uploaded but without automatic tags.',
+    'modelDownload.download': 'Download Model',
+    'modelDownload.skip': 'Skip Auto-Tag',
+    'modelDownload.downloading.title': 'Downloading AI Model',
+    'modelDownload.downloading.description': 'The model is being downloaded (~800 MB). This may take a few minutes depending on your network speed. Please wait...',
+    'modelDownload.downloading.progress': 'Downloading model, please wait...',
+    'modelDownload.error.downloadFailed': 'Model download failed. Please try again or skip auto-tagging.',
+    'groupOverlay.upload.downloadingModel': 'Downloading AI model...',
+
     // SettingsPage
     'settings.heading': 'Settings',
     'settings.general.heading': 'General',
@@ -463,6 +474,17 @@ const translations = {
     'tagPromptSuggest.prompt': '提示词',
     'tagPromptSuggest.tagAndPrompt': '标签 & 提示词',
     'tagPromptSuggest.filterScope.all': '全部',
+
+    // ModelDownloadModal
+    'modelDownload.title': '需要 AI 标签模型',
+    'modelDownload.description': '上传图片并启用自动标签功能前，需要先下载 AI 自动标签模型（约 800 MB）。您也可以跳过此步骤——图片仍会上传，但不会自动生成标签。',
+    'modelDownload.download': '下载模型',
+    'modelDownload.skip': '跳过自动标签',
+    'modelDownload.downloading.title': '正在下载 AI 模型',
+    'modelDownload.downloading.description': '模型正在下载中（约 800 MB），根据您的网络速度可能需要几分钟，请耐心等待……',
+    'modelDownload.downloading.progress': '正在下载模型，请稍候……',
+    'modelDownload.error.downloadFailed': '模型下载失败，请重试或跳过自动标签。',
+    'groupOverlay.upload.downloadingModel': '正在下载 AI 模型……',
 
     // SettingsPage
     'settings.heading': '设置',

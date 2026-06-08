@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpDown, Layers, Settings, Upload, Download, Trash2, X, Monitor, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import useQuality from '../hooks/useQuality';
 import useDownloadConfig, { resolveFilename, sanitizeFilename } from '../hooks/useDownloadConfig';
-import { listIllustrations, uploadSingleIllustration, updateGroup, deleteIllustration } from '../api';
+import { listIllustrations, uploadSingleIllustration, updateGroup, deleteIllustration, checkModelStatus, downloadModel } from '../api';
 import { useToast } from './Toast';
 import ConfirmModal from './ConfirmModal';
 import Lightbox from './Lightbox';
@@ -12,6 +12,7 @@ import ColorGroup from './ColorGroup';
 import DropdownSelect from './DropdownSelect';
 import TagPromptSuggest from './TagPromptSuggest';
 import GroupConfigModal from './GroupConfigModal';
+import ModelDownloadModal from './ModelDownloadModal';
 import useGroupConfig from '../hooks/useGroupConfig';
 import { matchesTagPair, matchesPromptPair, groupIllustrations } from '../utils/grouping';
 import { useLocale } from '../contexts/LocaleContext';
@@ -23,6 +24,8 @@ export default function GroupOverlay({ group, onClose, onGroupUpdated }) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null); // { current, total, filename, stage }
+  const [pendingFiles, setPendingFiles] = useState(null); // files queued for upload while model modal is shown
+  const [showModelModal, setShowModelModal] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const [filterScope, setFilterScope] = useState('all'); // 'all' | 'tag' | 'prompt'
   const [error, setError] = useState('');
@@ -200,9 +203,9 @@ export default function GroupOverlay({ group, onClose, onGroupUpdated }) {
 
   // ── Handlers ───────────────────────────────────────────
 
-  const handleUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
+  // ── Upload helpers ──────────────────────────────────────
+
+  const doUpload = useCallback(async (files, skipAutoTag) => {
     setUploading(true);
     setError('');
     setSelectedIds(new Set());
@@ -213,7 +216,7 @@ export default function GroupOverlay({ group, onClose, onGroupUpdated }) {
       const file = files[i];
       setUploadProgress({ current: i + 1, total, filename: file.name, stage: 'uploading' });
       try {
-        await uploadSingleIllustration(group.id, file);
+        await uploadSingleIllustration(group.id, file, skipAutoTag);
         succeeded++;
       } catch (err) {
         setError(`${file.name}: ${err.message || t('groupOverlay.upload.failed')}`);
@@ -226,6 +229,62 @@ export default function GroupOverlay({ group, onClose, onGroupUpdated }) {
       await fetchPage(currentPage, pageSize);
       if (onGroupUpdated) onGroupUpdated();
     }
+  }, [group.id, currentPage, pageSize, fetchPage, onGroupUpdated, t]);
+
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    // Check if the tagger model is cached (needed for auto-tag)
+    try {
+      const status = await checkModelStatus();
+      if (!status.cached) {
+        // Model not cached — store files and show download modal
+        setPendingFiles(files);
+        setShowModelModal(true);
+        return;
+      }
+    } catch {
+      // If status check fails, proceed anyway (backend will handle)
+    }
+
+    // Model is cached — proceed directly
+    await doUpload(files, false);
+  };
+
+  const handleModelDownload = async () => {
+    setShowModelModal(false);
+    if (!pendingFiles) return;
+    const files = pendingFiles;
+    setPendingFiles(null);
+    setUploading(true);
+    setUploadProgress({ current: 0, total: files.length, filename: '', stage: 'downloading' });
+    try {
+      await downloadModel();
+    } catch (err) {
+      setError(err.message || t('modelDownload.error.downloadFailed'));
+      setUploading(false);
+      setUploadProgress(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    // Model downloaded, now upload with auto-tag
+    await doUpload(files, false);
+  };
+
+  const handleModelSkip = () => {
+    setShowModelModal(false);
+    if (!pendingFiles) return;
+    const files = pendingFiles;
+    setPendingFiles(null);
+    // Upload without auto-tagging
+    doUpload(files, true);
+  };
+
+  const handleModelClose = () => {
+    setShowModelModal(false);
+    setPendingFiles(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSetCoverConfirm = async () => {
@@ -499,23 +558,41 @@ export default function GroupOverlay({ group, onClose, onGroupUpdated }) {
           {/* Upload progress bar */}
           {uploadProgress && (
             <div className="mb-4 p-4 rounded-xl bg-surface-secondary border border-edge-primary">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-content-primary flex items-center gap-2">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
-                  {t('groupOverlay.upload.progress', { current: uploadProgress.current, total: uploadProgress.total })}
-                </span>
-                <span className="text-xs text-content-muted truncate ml-4 max-w-[300px]">
-                  {uploadProgress.filename}
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-surface-tertiary overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full bg-accent"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                />
-              </div>
+              {uploadProgress.stage === 'downloading' ? (
+                <div className="flex items-center gap-3">
+                  <Loader2 className="w-5 h-5 animate-spin text-accent shrink-0" />
+                  <span className="text-sm font-medium text-content-primary">
+                    {t('groupOverlay.upload.downloadingModel')}
+                  </span>
+                  <div className="flex-1 h-1.5 rounded-full bg-surface-tertiary overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full bg-accent"
+                      animate={{ width: ['0%', '90%'] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-content-primary flex items-center gap-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                      {t('groupOverlay.upload.progress', { current: uploadProgress.current, total: uploadProgress.total })}
+                    </span>
+                    <span className="text-xs text-content-muted truncate ml-4 max-w-[300px]">
+                      {uploadProgress.filename}
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-surface-tertiary overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full bg-accent"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -687,6 +764,15 @@ export default function GroupOverlay({ group, onClose, onGroupUpdated }) {
           />
         )}
       </AnimatePresence>
+
+      {/* Model download modal */}
+      {showModelModal && (
+        <ModelDownloadModal
+          onDownload={handleModelDownload}
+          onSkip={handleModelSkip}
+          onClose={handleModelClose}
+        />
+      )}
 
       {/* Confirm: set as cover */}
       {coverTarget && (

@@ -54,6 +54,29 @@ def set_use_gpu(enabled: bool):
         _tagger_model = None
 
 
+def is_model_cached() -> bool:
+    """Check whether the WD-EVA02 tagger model has been downloaded to the local cache."""
+    model_cache_dir = os.path.join(MODELS_DIR, "models--SmilingWolf--wd-eva02-large-tagger-v3")
+    if not os.path.isdir(model_cache_dir):
+        return False
+    blobs_dir = os.path.join(model_cache_dir, "blobs")
+    if os.path.isdir(blobs_dir) and os.listdir(blobs_dir):
+        return True
+    # Also check under the old-style cache layout (snapshots / refs)
+    for sub in ("snapshots", "refs"):
+        d = os.path.join(model_cache_dir, sub)
+        if os.path.isdir(d) and os.listdir(d):
+            return True
+    return False
+
+
+def download_model():
+    """Pre-download the tagger model to the local cache (blocking)."""
+    logger.info("Pre-downloading tagger model...")
+    _load_tagger()
+    logger.info("Tagger model download complete.")
+
+
 def _load_tagger():
     """Lazy-load and cache the WD EVA02-Large Tagger v3 model."""
     global _tagger_model, _tagger_tag_names, _tagger_rating_indexes
