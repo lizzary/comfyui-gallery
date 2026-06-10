@@ -1,14 +1,25 @@
 # Artifex Backend (Go) Makefile
 # Go SDK path: C:\Users\29623\sdk\go1.26.4
 # Override GO if your go binary is elsewhere
+#
+# Quick usage:
+#   make               → portable build (no ONNX, works everywhere)
+#   make build         → full build with ONNX Runtime (needs GCC + onnxruntime.dll)
+#   make run           → dev server (portable)
 
-GO ?= go
+GO      ?= go
 GOFLAGS ?=
 LDFLAGS ?= -s -w
 
-.PHONY: all run build build-noonx build-windows clean dist
+# Enable CGO by default for the full ONNX build.
+# The -tags noonx builds (stub) ignore this via build tags anyway,
+# but set CGO_ENABLED=0 explicitly if you don't have GCC installed.
+CGO_ENABLED ?= 1
+export CGO_ENABLED
 
-all: build
+.PHONY: all run build build-noonx build-windows build-linux dist dist-full clean
+
+all: build-noonx
 
 # ── Development ───────────────────────────────────────────────────────────
 
@@ -17,25 +28,29 @@ run:
 
 # ── Build ─────────────────────────────────────────────────────────────────
 
-# Default build with ONNX Runtime support (requires CGO + onnxruntime shared lib)
+# Full build with ONNX Runtime support.
+# Prerequisites: GCC (MinGW), onnxruntime.dll, downloaded tagger model.
 build:
-	CGO_ENABLED=1 $(GO) build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o artifex-server.exe .
+	$(GO) build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o artifex-server.exe .
 
-# Pure Go build without ONNX Runtime (no CGO required, zero deps)
+# Pure Go build — zero dependencies, no ONNX, no auto-tagging.
+# Target-specific: forces CGO_ENABLED=0 regardless of shell.
 build-noonx:
-	CGO_ENABLED=0 $(GO) build $(GOFLAGS) -tags noonx -ldflags "$(LDFLAGS)" -o artifex-server-noonx.exe .
+	$(GO) build $(GOFLAGS) -tags noonx -ldflags "$(LDFLAGS)" -o artifex-server-noonx.exe .
 
-# Cross-compile for Windows from Linux/macOS (pure Go, no ONNX)
+# These targets explicitly disable CGO via Make variable override.
+# Use: make build-noonx CGO_ENABLED=0 (or rely on -tags noonx to skip cgo deps)
+
+# Cross-compile for Windows from Linux/macOS
 build-windows:
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -tags noonx -ldflags "$(LDFLAGS)" -o artifex-server.exe .
 
-# Cross-compile for Linux (pure Go, no ONNX)
+# Cross-compile for Linux
 build-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GO) build -tags noonx -ldflags "$(LDFLAGS)" -o artifex-server .
 
 # ── Distribution ──────────────────────────────────────────────────────────
 
-# Prepare distribution directory
 dist: build-noonx
 	rm -rf dist/Artifex
 	mkdir -p dist/Artifex/models/default dist/Artifex/models/user_model dist/Artifex/uploads
@@ -45,7 +60,6 @@ dist: build-noonx
 	@echo "Distribution prepared in dist/Artifex/"
 	@echo "To include frontend, copy frontend/build/ to dist/Artifex/_internal/frontend/"
 
-# Full distribution with frontend
 dist-full: build-noonx
 	rm -rf dist/Artifex
 	mkdir -p dist/Artifex/_internal/frontend dist/Artifex/models/default dist/Artifex/models/user_model dist/Artifex/uploads

@@ -37,7 +37,7 @@ const (
 
 // Module-level tagger cache
 var (
-	taggerSession    *ort.AdvancedSession
+	taggerSession    *ort.DynamicAdvancedSession
 	taggerTagNames   []string
 	taggerRatingIdx  []int
 	taggerGeneralIdx []int
@@ -112,23 +112,23 @@ func LoadTagger(modelsDir string) error {
 		return fmt.Errorf("failed to parse labels: %w", err)
 	}
 
-	// Configure ONNX Runtime
-	var providers []string
-	if gpu {
-		providers = append(providers, "CUDAExecutionProvider")
+	// Initialize ONNX Runtime (one-time, loads onnxruntime.dll)
+	if !ort.IsInitialized() {
+		if err := ort.InitializeEnvironment(); err != nil {
+			return fmt.Errorf("failed to initialize ONNX Runtime: %w", err)
+		}
 	}
-	providers = append(providers, "CPUExecutionProvider")
 
+	// Configure ONNX Runtime session options
 	opts := ort.SessionOptions{}
-	// Set providers
 	if gpu {
-		_ = providers[0] // CUDA
+		if err := opts.AppendExecutionProvider("CUDAExecutionProvider", nil); err != nil {
+			fmt.Println("  GPU (CUDA) not available, falling back to CPU:", err)
+		}
 	}
-	// Always use CPU as fallback
 
-	session, err := ort.NewAdvancedSession(onnxPath,
+	session, err := ort.NewDynamicAdvancedSession(onnxPath,
 		[]string{"input"}, []string{"output"},
-		[]ort.ArbitraryTensor{},
 		&opts,
 	)
 	if err != nil {
@@ -162,15 +162,21 @@ func ExtractTags(img image.Image) string {
 	}
 
 	// Run inference
-	outputTensor, err := taggerSession.Run([]ort.ArbitraryTensor{inputTensor})
+	outputs := []ort.Value{nil} // nil = auto-allocate by ONNX Runtime
+	err = taggerSession.Run([]ort.Value{inputTensor}, outputs)
 	if err != nil {
 		fmt.Println("Tag extraction failed during inference:", err)
 		return ""
 	}
-	defer outputTensor[0].Destroy()
+	defer outputs[0].Destroy()
 
 	// Get output data
-	outputData := outputTensor[0].GetFloat32Data()
+	outputTensor, ok := outputs[0].(*ort.Tensor[float32])
+	if !ok {
+		fmt.Println("Tag extraction failed: unexpected output type")
+		return ""
+	}
+	outputData := outputTensor.GetData()
 	if outputData == nil {
 		return ""
 	}
