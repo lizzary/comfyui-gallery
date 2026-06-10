@@ -250,7 +250,7 @@ npm start
 
 <div align="center">
 
-**[Optional] ONNX Auto-Tagging (Steps 6–8)**
+**[Optional] ONNX Auto-Tagging (Steps 5–7)**
 
 </div>
 
@@ -260,23 +260,7 @@ npm start
 
 The ONNX Runtime Go bindings require **CGO**, which needs a C compiler.
 
-**Option A — MSYS2 (recommended, full-featured):**
-
-1. Download from https://www.msys2.org/
-2. Install and open **MSYS2 UCRT64** from the Start Menu
-3. Run inside that terminal:
-
-   ```bash
-   pacman -S mingw-w64-ucrt-x86_64-gcc
-   ```
-
-4. Add `C:\msys64\ucrt64\bin` to your system **PATH**:
-
-   ```cmd
-   setx PATH "%PATH%;C:\msys64\ucrt64\bin"
-   ```
-
-**Option B — winlibs (quick, standalone):**
+**winlibs (quick, standalone):**
 
 1. Go to https://github.com/brechtsanders/winlibs_mingw/releases
 2. Download the latest **"Win64 Zip"** (without LLVM/Clang), e.g. `winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64-13.0.0-r1.zip`
@@ -371,21 +355,7 @@ backend-go/models/default/
 
 You have **two build modes** — pick one:
 
-#### Mode A: Pure Go Build (portable, no ONNX Runtime)
-
-```cmd
-cd backend-go
-
-:: Windows CMD / PowerShell:
-build.bat
-
-:: Or with Make:
-make build-noonx
-```
-
-This produces `artifex-server-noonx.exe`. It includes all gallery features **except** AI auto-tagging (you can still manually edit tags). Zero external dependencies.
-
-#### Mode B: Full Build with ONNX Auto-Tagging
+#### Build with ONNX Auto-Tagging
 
 **Prerequisites:** Steps 6–8 must be completed first (GCC + onnxruntime.dll + model).
 
